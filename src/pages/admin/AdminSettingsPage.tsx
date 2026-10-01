@@ -1,0 +1,186 @@
+import { useState, useEffect, type FormEvent } from 'react';
+import { Save, Loader2, CheckCircle } from 'lucide-react';
+import { AdminLayout } from './AdminLayout';
+import { ImageUpload } from '@/components/admin/ImageUpload';
+import { LoadingSpinner } from '@/components/States';
+import { supabase } from '@/lib/supabase';
+import type { WebsiteSettings } from '@/types/database';
+
+export function AdminSettingsPage() {
+  const [settings, setSettings] = useState<WebsiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  const [form, setForm] = useState({
+    business_name: '', tagline: '', logo_url: '', favicon_url: '',
+    phone: '', whatsapp: '', email: '', address: '', address_short: '',
+    description: '', facebook_url: '', instagram_url: '', footer_content: '',
+    website_title: '', meta_description: '',
+  });
+
+  useEffect(() => {
+    supabase.from('website_settings').select('*').limit(1).maybeSingle().then(({ data, error }) => {
+      if (!error && data) {
+        setSettings(data);
+        setForm({
+          business_name: data.business_name || '',
+          tagline: data.tagline || '',
+          logo_url: data.logo_url || '',
+          favicon_url: data.favicon_url || '',
+          phone: data.phone || '',
+          whatsapp: data.whatsapp || '',
+          email: data.email || '',
+          address: data.address || '',
+          address_short: data.address_short || '',
+          description: data.description || '',
+          facebook_url: data.facebook_url || '',
+          instagram_url: data.instagram_url || '',
+          footer_content: data.footer_content || '',
+          website_title: data.website_title || '',
+          meta_description: data.meta_description || '',
+        });
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setSaved(false);
+
+    if (settings) {
+      const { error } = await supabase.from('website_settings').update(form).eq('id', settings.id);
+      if (error) { setError(error.message); setSaving(false); return; }
+    } else {
+      const { error } = await supabase.from('website_settings').insert(form);
+      if (error) { setError(error.message); setSaving(false); return; }
+    }
+
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Settings">
+        <LoadingSpinner label="Loading settings..." />
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout title="Settings">
+      <form onSubmit={handleSave} className="space-y-6 max-w-3xl">
+        {error && <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
+        {saved && (
+          <div className="p-3 rounded-lg bg-palm-50 border border-palm-200 text-palm-700 text-sm flex items-center gap-2">
+            <CheckCircle size={16} /> Settings saved successfully.
+          </div>
+        )}
+
+        {/* Business info */}
+        <div className="bg-cream rounded-xl border border-date-100 p-6 space-y-4">
+          <h3 className="font-display font-bold text-date-800">Business Information</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label-text">Business Name</label>
+              <input type="text" value={form.business_name} onChange={(e) => setForm(prev => ({ ...prev, business_name: e.target.value }))} className="input-field" />
+            </div>
+            <div>
+              <label className="label-text">Tagline</label>
+              <input type="text" value={form.tagline} onChange={(e) => setForm(prev => ({ ...prev, tagline: e.target.value }))} className="input-field" />
+            </div>
+          </div>
+          <div>
+            <label className="label-text">Description</label>
+            <textarea rows={3} value={form.description} onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))} className="input-field resize-none" />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <ImageUpload
+              label="Logo"
+              value={form.logo_url}
+              onChange={(url) => setForm(prev => ({ ...prev, logo_url: url }))}
+              onRemove={() => setForm(prev => ({ ...prev, logo_url: '' }))}
+              aspect="aspect-square"
+            />
+            <ImageUpload
+              label="Favicon"
+              value={form.favicon_url}
+              onChange={(url) => setForm(prev => ({ ...prev, favicon_url: url }))}
+              onRemove={() => setForm(prev => ({ ...prev, favicon_url: '' }))}
+              aspect="aspect-square"
+            />
+          </div>
+        </div>
+
+        {/* Contact info */}
+        <div className="bg-cream rounded-xl border border-date-100 p-6 space-y-4">
+          <h3 className="font-display font-bold text-date-800">Contact Information</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label-text">Phone</label>
+              <input type="text" value={form.phone} onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))} className="input-field" />
+            </div>
+            <div>
+              <label className="label-text">WhatsApp</label>
+              <input type="text" value={form.whatsapp} onChange={(e) => setForm(prev => ({ ...prev, whatsapp: e.target.value }))} className="input-field" />
+            </div>
+            <div>
+              <label className="label-text">Email</label>
+              <input type="email" value={form.email} onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))} className="input-field" />
+            </div>
+            <div>
+              <label className="label-text">Address (short)</label>
+              <input type="text" value={form.address_short} onChange={(e) => setForm(prev => ({ ...prev, address_short: e.target.value }))} className="input-field" />
+            </div>
+          </div>
+          <div>
+            <label className="label-text">Full Address</label>
+            <input type="text" value={form.address} onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))} className="input-field" />
+          </div>
+        </div>
+
+        {/* Social links */}
+        <div className="bg-cream rounded-xl border border-date-100 p-6 space-y-4">
+          <h3 className="font-display font-bold text-date-800">Social Links</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label-text">Facebook URL</label>
+              <input type="text" value={form.facebook_url} onChange={(e) => setForm(prev => ({ ...prev, facebook_url: e.target.value }))} className="input-field" placeholder="https://facebook.com/..." />
+            </div>
+            <div>
+              <label className="label-text">Instagram URL</label>
+              <input type="text" value={form.instagram_url} onChange={(e) => setForm(prev => ({ ...prev, instagram_url: e.target.value }))} className="input-field" placeholder="https://instagram.com/..." />
+            </div>
+          </div>
+        </div>
+
+        {/* SEO */}
+        <div className="bg-cream rounded-xl border border-date-100 p-6 space-y-4">
+          <h3 className="font-display font-bold text-date-800">SEO & Website</h3>
+          <div>
+            <label className="label-text">Website Title (browser tab)</label>
+            <input type="text" value={form.website_title} onChange={(e) => setForm(prev => ({ ...prev, website_title: e.target.value }))} className="input-field" />
+          </div>
+          <div>
+            <label className="label-text">Meta Description</label>
+            <textarea rows={2} value={form.meta_description} onChange={(e) => setForm(prev => ({ ...prev, meta_description: e.target.value }))} className="input-field resize-none" />
+          </div>
+          <div>
+            <label className="label-text">Footer Content</label>
+            <textarea rows={2} value={form.footer_content} onChange={(e) => setForm(prev => ({ ...prev, footer_content: e.target.value }))} className="input-field resize-none" />
+          </div>
+        </div>
+
+        <button type="submit" disabled={saving} className="btn-primary disabled:opacity-60">
+          {saving ? <><Loader2 size={18} className="animate-spin" /> Saving...</> : <><Save size={18} /> Save Settings</>}
+        </button>
+      </form>
+    </AdminLayout>
+  );
+}
