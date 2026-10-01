@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { FullPageLoader } from '@/components/States';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/auth';
+import { WebsiteSettingsProvider } from '@/hooks/useData';
 
 // Public pages
 import { HomePage } from '@/pages/public/HomePage';
@@ -25,9 +27,21 @@ import { AdminAboutPage } from '@/pages/admin/AdminAboutPage';
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
   if (loading) return <FullPageLoader />;
   if (!session) return <Navigate to="/admin/login" replace />;
+  if (!isAdminEmail(session.user.email)) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-12">
+        <section className="w-full max-w-lg rounded-md border border-date-200 bg-white p-8 text-center shadow-sm">
+          <h1 className="font-display text-2xl font-semibold text-date-950">Admin access is restricted</h1>
+          <p className="mt-3 text-sm leading-6 text-date-700">This account is not authorized to manage this site. Sign out and use the designated admin account.</p>
+          <button type="button" onClick={() => void signOut()} className="btn-primary mt-6">Sign out</button>
+          <p className="mt-4"><Link to="/" className="text-sm font-medium text-date-800 underline">Return to the website</Link></p>
+        </section>
+      </main>
+    );
+  }
   return <>{children}</>;
 }
 
@@ -85,9 +99,11 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <WebsiteSettingsProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </WebsiteSettingsProvider>
     </AuthProvider>
   );
 }

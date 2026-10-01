@@ -1,15 +1,17 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
 import { LoadingSpinner, EmptyState } from '@/components/States';
 import { useGallery } from '@/hooks/useData';
-import { PLACEHOLDER_IMAGES } from '@/lib/constants';
 
 export function GalleryPage() {
   const { gallery, loading } = useGallery(true);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [category, setCategory] = useState('All');
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const isLightboxOpen = lightbox !== null;
 
   const categories = useMemo(() => {
     const cats = new Set(gallery.map(g => g.category).filter(Boolean));
@@ -37,16 +39,41 @@ export function GalleryPage() {
     });
   }, [filtered.length]);
 
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const focusFrame = requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus());
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeLightbox(); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); next(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); prev(); }
+      if (event.key === 'Tab' && dialogRef.current) {
+        const buttons = Array.from(dialogRef.current.querySelectorAll<HTMLButtonElement>('button:not([disabled])'));
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLightboxOpen, closeLightbox, next, prev]);
+
+  useEffect(() => {
+    if (isLightboxOpen) return;
+    triggerRef.current?.focus();
+  }, [isLightboxOpen]);
+
   return (
     <PublicLayout
       title="Gallery"
-      description="A visual journey through Khairpur's date farms, markets, and our sourcing operations."
-      image={PLACEHOLDER_IMAGES.datesMarket}
+      description="View photos published by Babu Commission Shop."
     >
       <PageHeader
         title="Gallery"
-        subtitle="A glimpse into the world of Khairpur dates — from palm plantations to market trading and custom packaging."
-        image={PLACEHOLDER_IMAGES.datesMarket}
+        subtitle="Browse photos selected by Babu Commission Shop."
       />
 
       <section className="section-padding bg-cream">
@@ -56,7 +83,9 @@ export function GalleryPage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setCategory(cat)}
+                  type="button"
+                  aria-pressed={category === cat}
+                  onClick={() => { setCategory(cat); setLightbox(null); }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     category === cat
                       ? 'bg-date-700 text-cream'
@@ -78,7 +107,9 @@ export function GalleryPage() {
               {filtered.map((item, idx) => (
                 <button
                   key={item.id}
-                  onClick={() => setLightbox(idx)}
+                  type="button"
+                  onClick={(event) => { triggerRef.current = event.currentTarget; setLightbox(idx); }}
+                  aria-label={`Open image: ${item.caption || item.alt_text || 'Gallery photo'}`}
                   className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer bg-date-100"
                 >
                   <img
@@ -102,10 +133,15 @@ export function GalleryPage() {
       {/* Lightbox */}
       {lightbox !== null && filtered[lightbox] && (
         <div
+          ref={dialogRef}
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-fade-in"
           onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gallery image viewer"
         >
           <button
+            type="button"
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
             onClick={closeLightbox}
             aria-label="Close"
@@ -113,6 +149,7 @@ export function GalleryPage() {
             <X size={24} />
           </button>
           <button
+            type="button"
             className="absolute left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
             onClick={(e) => { e.stopPropagation(); prev(); }}
             aria-label="Previous"
@@ -120,6 +157,7 @@ export function GalleryPage() {
             <ChevronLeft size={28} />
           </button>
           <button
+            type="button"
             className="absolute right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
             onClick={(e) => { e.stopPropagation(); next(); }}
             aria-label="Next"

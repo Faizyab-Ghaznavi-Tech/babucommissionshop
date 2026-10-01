@@ -4,11 +4,10 @@ import { AdminLayout } from './AdminLayout';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { LoadingSpinner } from '@/components/States';
 import { supabase } from '@/lib/supabase';
-import type { WebsiteSettings } from '@/types/database';
+import { useWebsiteSettings } from '@/hooks/useData';
 
 export function AdminSettingsPage() {
-  const [settings, setSettings] = useState<WebsiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { settings, setSettings, loading, error: settingsError } = useWebsiteSettings();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -21,43 +20,29 @@ export function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const { data, error } = await supabase.from('website_settings').select('*').limit(1).maybeSingle();
-        if (error) {
-          setError(error.message);
-          return;
-        }
+    if (settingsError) setError(settingsError);
+  }, [settingsError]);
 
-        if (data) {
-          setSettings(data);
-          setForm({
-            business_name: data.business_name || '',
-            tagline: data.tagline || '',
-            logo_url: data.logo_url || '',
-            favicon_url: data.favicon_url || '',
-            phone: data.phone || '',
-            whatsapp: data.whatsapp || '',
-            email: data.email || '',
-            address: data.address || '',
-            address_short: data.address_short || '',
-            description: data.description || '',
-            facebook_url: data.facebook_url || '',
-            instagram_url: data.instagram_url || '',
-            footer_content: data.footer_content || '',
-            website_title: data.website_title || '',
-            meta_description: data.meta_description || '',
-          });
-        }
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : 'Could not load website settings.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void loadSettings();
-  }, []);
+  useEffect(() => {
+    if (!settings) return;
+    setForm({
+      business_name: settings.business_name || '',
+      tagline: settings.tagline || '',
+      logo_url: settings.logo_url || '',
+      favicon_url: settings.favicon_url || '',
+      phone: settings.phone || '',
+      whatsapp: settings.whatsapp || '',
+      email: settings.email || '',
+      address: settings.address || '',
+      address_short: settings.address_short || '',
+      description: settings.description || '',
+      facebook_url: settings.facebook_url || '',
+      instagram_url: settings.instagram_url || '',
+      footer_content: settings.footer_content || '',
+      website_title: settings.website_title || '',
+      meta_description: settings.meta_description || '',
+    });
+  }, [settings]);
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,8 +52,9 @@ export function AdminSettingsPage() {
 
     try {
       if (settings) {
-        const { error } = await supabase.from('website_settings').update(form).eq('id', settings.id);
+        const { data, error } = await supabase.from('website_settings').update(form).eq('id', settings.id).select('*').single();
         if (error) { setError(error.message); return; }
+        setSettings(data);
       } else {
         const { data, error } = await supabase.from('website_settings').insert(form).select('*').single();
         if (error) { setError(error.message); return; }

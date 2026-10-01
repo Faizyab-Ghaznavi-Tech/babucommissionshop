@@ -1,424 +1,143 @@
+import { ArrowRight, Check, MapPin, Package, Sprout, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight, MapPin, Phone, Sprout, Handshake, Package, Truck,
-  Gift, Moon, Ship,
-} from 'lucide-react';
+import { EnquiryForm } from '@/components/EnquiryForm';
 import { PublicLayout } from '@/components/PublicLayout';
 import { SectionTitle } from '@/components/SectionTitle';
-import { LoadingSpinner, EmptyState } from '@/components/States';
-import {
-  useProducts, useServices, useAnnouncements, useGallery, useWebsiteSettings,
-} from '@/hooks/useData';
+import { EmptyState, LoadingSpinner } from '@/components/States';
+import { useAboutContent, useProducts, useServices, useWebsiteSettings } from '@/hooks/useData';
+import { getWhatsAppUrl } from '@/lib/contact';
 import { PLACEHOLDER_IMAGES, PRODUCT_IMAGES } from '@/lib/constants';
-
-
-const iconMap: Record<string, typeof Sprout> = {
-  Sprout, Handshake, Package, Truck, Gift, Moon, Ship,
-};
+import { sanitizeAboutContent, sanitizePublicSettings } from '@/lib/siteContent';
 
 export function HomePage() {
   const { products, loading: productsLoading } = useProducts();
-  const { services, loading: servicesLoading } = useServices();
-  const { announcements } = useAnnouncements(true);
-  const { gallery } = useGallery(true);
-  const { settings } = useWebsiteSettings();
+  const { services } = useServices();
+  const { about: rawAbout } = useAboutContent();
+  const { settings: rawSettings } = useWebsiteSettings();
+  const about = sanitizeAboutContent(rawAbout);
+  const settings = sanitizePublicSettings(rawSettings);
 
-  const featuredProducts = products.filter(p => p.featured).slice(0, 3);
-  const displayProducts = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 3);
-  const galleryPreview = gallery.slice(0, 6);
+  const featuredProducts = products.filter((product) => product.featured);
+  const displayProducts = (featuredProducts.length ? featuredProducts : products).slice(0, 3);
+  const whatsappUrl = getWhatsAppUrl(settings?.whatsapp);
+  const aboutCopy = about?.business_description || settings?.description;
 
   return (
-    <PublicLayout>
-      {/* Hero */}
-      <section className="relative min-h-[600px] md:min-h-[680px] flex items-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={PLACEHOLDER_IMAGES.heroPalm}
-            alt="Date palm plantation"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-date-900/85 via-date-900/60 to-date-800/30" />
-        </div>
-        <div className="relative container-prose py-20 md:py-28">
-          <div className="max-w-2xl animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream/10 backdrop-blur-sm border border-cream/20 text-cream/90 text-sm mb-6">
-              <MapPin size={15} className="text-palm-400" />
-              <span>New Khajoor Mandi, Khairpur</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-cream leading-tight text-balance">
-              Sourcing the Finest Dates from the Heart of Khairpur
+    <PublicLayout
+      description={settings?.meta_description || 'Explore date varieties from Khairpur and contact Babu Commission Shop about sourcing and wholesale enquiries.'}
+      image={PLACEHOLDER_IMAGES.datesBowl}
+    >
+      <section className="bg-cream">
+        <div className="container-prose grid min-h-[36rem] items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:py-20">
+          <div className="max-w-2xl">
+            <p className="eyebrow flex items-center gap-2"><MapPin size={15} aria-hidden="true" /> Khairpur, Sindh</p>
+            <h1 className="mt-5 font-display text-4xl font-semibold leading-tight text-date-950 sm:text-5xl lg:text-6xl">
+              Khairpur dates, sourced with care.
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-cream/85 leading-relaxed max-w-xl">
-              {settings?.description ?? 'Babu Commission Shop connects buyers with premium Khairpur dates through direct farmer sourcing, commission-based buying, and bulk supply — with custom packaging for retailers and wholesalers.'}
+            <p className="mt-6 max-w-xl text-lg leading-8 text-date-700">
+              {settings?.tagline || 'Explore date varieties and talk with Babu Commission Shop about your sourcing requirements.'}
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link to="/dates" className="btn-primary text-base">
-                Explore Date Varieties
-                <ArrowRight size={18} />
-              </Link>
-              <Link to="/contact" className="btn-secondary text-base border-cream/30 text-cream hover:bg-cream hover:text-date-800">
-                Make an Enquiry
-              </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link to="/#wholesale" className="btn-primary">Request a wholesale quote <ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link to="/dates" className="btn-secondary">Explore our dates</Link>
             </div>
+            {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-palm-800 underline decoration-palm-300 underline-offset-4">Message us on WhatsApp <ArrowRight size={15} aria-hidden="true" /></a>}
+          </div>
+          <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
+            <div className="aspect-[4/3] overflow-hidden rounded-md bg-date-100">
+              <img
+                src={PLACEHOLDER_IMAGES.datesBowl}
+                alt="Representative image of dates"
+                width="940"
+                height="705"
+                fetchPriority="high"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            {settings?.address_short && <div className="absolute -bottom-4 left-4 rounded-md border border-date-200 bg-white px-4 py-3 text-sm font-medium text-date-900 shadow-md sm:bottom-5 sm:left-5">{settings.address_short}</div>}
           </div>
         </div>
       </section>
 
-      {/* Trust strip */}
-      <section className="bg-date-800 py-6">
+      <section className="border-y border-date-200 bg-date-50 py-5">
+        <div className="container-prose flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-medium text-date-800">
+          <span className="inline-flex items-center gap-2"><Sprout size={17} className="text-palm-700" aria-hidden="true" /> Khairpur date varieties</span>
+          <span className="inline-flex items-center gap-2"><Package size={17} className="text-palm-700" aria-hidden="true" /> Sourcing enquiries</span>
+          <span className="inline-flex items-center gap-2"><Truck size={17} className="text-palm-700" aria-hidden="true" /> Wholesale discussions</span>
+        </div>
+      </section>
+
+      <section className="section-padding bg-white">
         <div className="container-prose">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-cream/70 text-sm">
-            <span className="flex items-center gap-2"><Sprout size={16} className="text-palm-400" /> Direct Farmer Sourcing</span>
-            <span className="hidden md:inline text-date-700">|</span>
-            <span className="flex items-center gap-2"><Handshake size={16} className="text-palm-400" /> Commission-Based Buying</span>
-            <span className="hidden md:inline text-date-700">|</span>
-            <span className="flex items-center gap-2"><Package size={16} className="text-palm-400" /> Bulk Supply</span>
-            <span className="hidden md:inline text-date-700">|</span>
-            <span className="flex items-center gap-2"><Truck size={16} className="text-palm-400" /> Nationwide Delivery</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Business intro */}
-      <section className="section-padding bg-cream">
-        <div className="container-prose grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div>
-            <SectionTitle
-              eyebrow="Who We Are"
-              title="Your Trusted Partner in Khairpur's Date Market"
-            />
-            <p className="text-date-600 leading-relaxed mb-4">
-              Babu Commission Shop operates from New Khajoor Mandi, Khairpur — one of Pakistan's most renowned date markets. We serve as a vital link between date farmers and buyers, offering sourcing, commission, and supply services built on years of market experience.
-            </p>
-            <p className="text-date-600 leading-relaxed mb-6">
-              From the prized Aseel to the soft Dhakki, we handle the full range of Khairpur date varieties. Whether you need a few maunds or container loads, we ensure consistent quality, fair pricing, and reliable delivery.
-            </p>
-            <Link to="/about" className="inline-flex items-center gap-2 text-date-700 font-medium hover:text-date-900 transition-colors">
-              Learn More About Us
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="relative">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src={PLACEHOLDER_IMAGES.datesCrate}
-                alt="Fresh dates at Khairpur market"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-6 -left-6 w-48 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-cream hidden md:block">
-              <img
-                src={PLACEHOLDER_IMAGES.palmHarvest}
-                alt="Date palm harvest"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Khairpur story */}
-      <section className="section-padding bg-date-50">
-        <div className="container-prose grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="order-2 md:order-1">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src={PLACEHOLDER_IMAGES.palmPlantation}
-                alt="Date palm plantation in Khairpur"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-          <div className="order-1 md:order-2">
-            <SectionTitle
-              eyebrow="The Khairpur Legacy"
-              title="A Region Renowned for Premium Dates"
-            />
-            <p className="text-date-600 leading-relaxed mb-4">
-              Khairpur, in upper Sindh, is one of Pakistan's most important date-growing regions. The district's hot, arid climate and fertile soil create ideal conditions for date cultivation, producing varieties prized across the country and beyond.
-            </p>
-            <p className="text-date-600 leading-relaxed mb-4">
-              New Khajoor Mandi — the central date market — is where farmers bring their harvest and buyers come to source. It's a place of tradition, trust, and commerce, and it's where Babu Commission Shop has built its reputation.
-            </p>
-            <p className="text-date-600 leading-relaxed">
-              We work directly with farmers across the region, ensuring the dates we source are authentic, fresh, and of the highest quality — from tree to market to your hands.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Date varieties */}
-      <section className="section-padding bg-cream">
-        <div className="container-prose">
-          <SectionTitle
-            eyebrow="Our Dates"
-            title="Premium Date Varieties from Khairpur"
-            subtitle="From the prized Aseel to the soft Dhakki, explore the finest date varieties the Khairpur region has to offer."
-            center
-          />
-          {productsLoading ? (
-            <LoadingSpinner label="Loading date varieties..." />
-          ) : displayProducts.length === 0 ? (
-            <EmptyState title="No products available" message="Please check back soon for our date varieties." />
+          <SectionTitle eyebrow="Our Dates" title="Explore date varieties" subtitle="Browse the current varieties listed by Babu Commission Shop. Contact us to ask about availability and quantities." center />
+          {productsLoading ? <LoadingSpinner label="Loading date varieties..." /> : displayProducts.length === 0 ? (
+            <EmptyState title="No products available" message="Please check back soon for date varieties." />
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {displayProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  to={`/dates/${product.slug}`}
-                  className="card overflow-hidden group"
-                >
+                <Link key={product.id} to={`/dates/${product.slug}`} className="card group overflow-hidden">
                   <div className="aspect-[4/3] overflow-hidden bg-date-100">
-                    <img
-                      src={product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
+                    <img src={product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl} alt={product.image_url ? product.name : `${product.name} — representative image`} width="940" height="705" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-5">
-                    {product.category && (
-                      <span className="text-xs font-medium text-palm-600 uppercase tracking-wider">{product.category}</span>
-                    )}
-                    <h3 className="mt-1 font-display font-semibold text-date-800 text-lg group-hover:text-date-600 transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="mt-2 text-sm text-date-500 line-clamp-2">{product.description}</p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-sm text-date-700 font-medium">
-                      View Details <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
+                    {product.category && <p className="eyebrow">{product.category}</p>}
+                    <h3 className="mt-2 font-display text-xl font-semibold text-date-950">{product.name}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-date-700">{product.description}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-date-900">View details <ArrowRight size={15} aria-hidden="true" /></span>
                   </div>
                 </Link>
               ))}
             </div>
           )}
-          <div className="text-center mt-10">
-            <Link to="/dates" className="btn-secondary">
-              View All Varieties
-              <ArrowRight size={18} />
-            </Link>
-          </div>
+          <div className="mt-9 text-center"><Link to="/dates" className="btn-secondary">View all varieties <ArrowRight size={17} aria-hidden="true" /></Link></div>
         </div>
       </section>
 
-      {/* Services */}
-      <section className="section-padding bg-date-800">
+      <section id="process" className="scroll-mt-24 section-padding bg-date-950 text-cream">
         <div className="container-prose">
-          <SectionTitle
-            eyebrow="What We Offer"
-            title="Our Services & Solutions"
-            subtitle="From direct farmer sourcing to custom Ramadan packaging, we provide end-to-end date sourcing solutions."
-            center
-            light
-          />
-          {servicesLoading ? (
-            <LoadingSpinner label="Loading services..." />
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.slice(0, 6).map((service) => {
-                const Icon = iconMap[service.icon_name] ?? Package;
-                return (
-                  <div key={service.id} className="bg-date-750 rounded-xl p-6 border border-date-700 hover:border-palm-500 transition-colors group" style={{ backgroundColor: 'rgba(90, 63, 40, 0.4)' }}>
-                    <div className="w-12 h-12 rounded-lg bg-palm-600/20 flex items-center justify-center mb-4 group-hover:bg-palm-600/30 transition-colors">
-                      <Icon size={24} className="text-palm-400" />
-                    </div>
-                    <h3 className="font-display font-semibold text-cream text-lg mb-2">{service.name}</h3>
-                    <p className="text-sm text-cream/70 leading-relaxed line-clamp-3">{service.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="text-center mt-10">
-            <Link to="/services" className="btn-secondary border-cream/30 text-cream hover:bg-cream hover:text-date-800">
-              Explore All Services
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Custom packaging */}
-      <section className="section-padding bg-cream">
-        <div className="container-prose">
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-                <img
-                  src={PLACEHOLDER_IMAGES.datesBags}
-                  alt="Custom date packaging"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            <div>
-              <SectionTitle
-                eyebrow="Custom Packaging"
-                title="Brand Your Dates with Custom Packaging"
-              />
-              <p className="text-date-600 leading-relaxed mb-6">
-                Stand out with custom-branded date packaging. Whether you're a retailer, corporate buyer, or preparing for Ramadan, we offer personalised packaging with your logo and branding — tailored to your specifications.
-              </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Custom-branded boxes and bags with your logo',
-                  'Ramadan special packaging for gifting',
-                  'Corporate gift packages',
-                  'Retail-ready packaging in various sizes',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-date-700">
-                    <span className="w-5 h-5 rounded-full bg-palm-100 flex items-center justify-center mt-0.5 shrink-0">
-                      <span className="w-2 h-2 rounded-full bg-palm-600" />
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/contact" className="btn-primary">
-                Enquire About Packaging
-                <ArrowRight size={18} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sourcing/process */}
-      <section className="section-padding bg-date-50">
-        <div className="container-prose">
-          <SectionTitle
-            eyebrow="Our Process"
-            title="From Farm to Your Doorstep"
-            subtitle="A transparent, quality-driven process that ensures you receive the finest dates."
-            center
-          />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+          <SectionTitle eyebrow="How to Enquire" title="A clear way to get started" subtitle="Share what you need, then discuss product options and next steps directly with the shop." center light />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Sprout, title: 'Source', desc: 'We work directly with farmers across Khairpur to source dates at peak ripeness.' },
-              { icon: Package, title: 'Select & Grade', desc: 'Each batch is carefully sorted and graded to meet quality standards.' },
-              { icon: Gift, title: 'Package', desc: 'Custom packaging options tailored to your brand and requirements.' },
-              { icon: Truck, title: 'Deliver', desc: 'Nationwide delivery ensures your order arrives on time and in excellent condition.' },
-            ].map((step, i) => (
-              <div key={step.title} className="relative">
-                <div className="card p-6 text-center">
-                  <div className="w-14 h-14 rounded-xl bg-palm-100 flex items-center justify-center mx-auto mb-4">
-                    <step.icon size={26} className="text-palm-600" />
-                  </div>
-                  <div className="absolute top-6 right-6 text-3xl font-display font-bold text-date-100">
-                    {i + 1}
-                  </div>
-                  <h3 className="font-display font-semibold text-date-800 mb-2">{step.title}</h3>
-                  <p className="text-sm text-date-500 leading-relaxed">{step.desc}</p>
-                </div>
-              </div>
+              { Icon: Sprout, title: 'Choose a variety', text: 'Browse the listed date varieties or ask about another requirement.' },
+              { Icon: Package, title: 'Share quantities', text: 'Tell us the approximate quantity and intended use.' },
+              { Icon: Check, title: 'Discuss details', text: 'We can follow up to discuss availability, packaging, and terms.' },
+              { Icon: Truck, title: 'Agree next steps', text: 'Confirm arrangements directly with the shop before placing an order.' },
+            ].map(({ Icon, title: stepTitle, text }, index) => (
+              <article key={stepTitle} className="relative rounded-md border border-cream/15 bg-white/5 p-6">
+                <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-palm-800 text-cream"><Icon size={22} aria-hidden="true" /></span>
+                <p className="text-xs font-bold uppercase tracking-widest text-sand-300">Step {index + 1}</p>
+                <h3 className="mt-2 font-display text-lg font-semibold text-cream">{stepTitle}</h3>
+                <p className="mt-2 text-sm leading-6 text-cream/75">{text}</p>
+              </article>
             ))}
           </div>
+          {services.length > 0 && <div className="mt-8 text-center"><Link to="/services" className="inline-flex min-h-11 items-center gap-2 font-semibold text-cream underline decoration-cream/40 underline-offset-4 hover:text-sand-300">See listed services <ArrowRight size={16} aria-hidden="true" /></Link></div>}
         </div>
       </section>
 
-      {/* Gallery preview */}
-      {galleryPreview.length > 0 && (
-        <section className="section-padding bg-cream">
-          <div className="container-prose">
-            <SectionTitle
-              eyebrow="Gallery"
-              title="A Glimpse of Our World"
-              center
-            />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryPreview.map((item) => (
-                <div key={item.id} className="aspect-square rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src={item.image_url}
-                    alt={item.alt_text || item.caption}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="text-center mt-10">
-              <Link to="/gallery" className="btn-secondary">
-                View Full Gallery
-                <ArrowRight size={18} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Announcements */}
-      {announcements.length > 0 && (
-        <section className="section-padding bg-date-50">
-          <div className="container-prose">
-            <SectionTitle
-              eyebrow="Latest News"
-              title="Announcements"
-              center
-            />
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {announcements.slice(0, 2).map((ann) => (
-                <div key={ann.id} className="card overflow-hidden">
-                  {ann.image_url && (
-                    <div className="aspect-[16/9] overflow-hidden">
-                      <img src={ann.image_url} alt={ann.title} className="w-full h-full object-cover" loading="lazy" />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <p className="text-xs text-palm-600 font-medium uppercase tracking-wider mb-2">
-                      {new Date(ann.announcement_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </p>
-                    <h3 className="font-display font-semibold text-date-800 text-lg mb-2">{ann.title}</h3>
-                    <p className="text-sm text-date-500 leading-relaxed line-clamp-3">{ann.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CTA */}
-      <section className="section-padding bg-palm-700">
-        <div className="container-prose text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-cream mb-4 text-balance">
-            Ready to Source Premium Khairpur Dates?
-          </h2>
-          <p className="text-cream/80 max-w-2xl mx-auto mb-8 text-lg">
-            Get in touch with us to discuss your date requirements — whether it's a specific variety, bulk supply, or custom packaging.
-          </p>
-          <Link to="/contact" className="inline-flex items-center gap-2 bg-cream text-palm-700 px-8 py-4 rounded-lg font-medium text-base hover:bg-white transition-colors active:scale-[0.98]">
-            Make a Business Enquiry
-            <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
-
-      {/* Contact section */}
       <section className="section-padding bg-cream">
-        <div className="container-prose">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-date-100 flex items-center justify-center mx-auto mb-4">
-                <MapPin size={24} className="text-date-700" />
-              </div>
-              <h3 className="font-display font-semibold text-date-800 mb-2">Visit Us</h3>
-              <p className="text-sm text-date-500">{settings?.address ?? 'New Khajoor Mandi, Khairpur, Sindh, Pakistan'}</p>
-            </div>
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-date-100 flex items-center justify-center mx-auto mb-4">
-                <Phone size={24} className="text-date-700" />
-              </div>
-              <h3 className="font-display font-semibold text-date-800 mb-2">Call Us</h3>
-              <p className="text-sm text-date-500">{settings?.phone ?? ''}</p>
-            </div>
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-date-100 flex items-center justify-center mx-auto mb-4">
-                <Gift size={24} className="text-date-700" />
-              </div>
-              <h3 className="font-display font-semibold text-date-800 mb-2">Our Services</h3>
-              <p className="text-sm text-date-500">Sourcing, Commission, Bulk Supply, Custom Packaging</p>
-            </div>
+        <div className="container-prose grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="aspect-[4/3] overflow-hidden rounded-md bg-date-100">
+            <img src={about?.image_1_url || PLACEHOLDER_IMAGES.palmPlantation} alt={about?.image_1_url ? 'Image provided by Babu Commission Shop' : 'Representative date palm image'} width="940" height="705" loading="lazy" className="h-full w-full object-cover" />
+          </div>
+          <div>
+            <SectionTitle eyebrow="About" title="Learn more about the shop" />
+            <p className="leading-7 text-date-700">{aboutCopy || 'Babu Commission Shop is based in Khairpur, Sindh. Contact the shop to ask about the varieties listed here and your sourcing requirements.'}</p>
+            <Link to="/about" className="btn-text mt-5">More about the shop <ArrowRight size={16} aria-hidden="true" /></Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="wholesale" className="scroll-mt-24 section-padding bg-date-50">
+        <div className="container-prose grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div className="lg:sticky lg:top-28">
+            <p className="eyebrow">Wholesale enquiry</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold leading-tight text-date-950 sm:text-4xl">Tell us what you need.</h2>
+            <p className="mt-4 leading-7 text-date-700">Send your variety, quantity, and packaging requirements. The shop can follow up using the details you provide.</p>
+            {settings?.address && <p className="mt-6 inline-flex items-start gap-2 text-sm text-date-700"><MapPin size={17} className="mt-0.5 shrink-0" aria-hidden="true" />{settings.address}</p>}
+          </div>
+          <div className="rounded-md border border-date-200 bg-white p-5 shadow-sm sm:p-8">
+            <EnquiryForm products={products} services={services} mode="wholesale" />
           </div>
         </div>
       </section>

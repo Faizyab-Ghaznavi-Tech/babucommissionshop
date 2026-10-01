@@ -56,7 +56,7 @@ export function ProductDetailPage() {
       <section className="pb-16">
         <div className="container-prose grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="aspect-square rounded-2xl overflow-hidden shadow-xl bg-date-100">
-            <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            <img src={imageUrl} alt={product.image_url ? product.name : `${product.name} — representative image`} width="940" height="940" className="w-full h-full object-cover" />
           </div>
           <div className="pt-4">
             {product.category && (
@@ -73,7 +73,7 @@ export function ProductDetailPage() {
             </p>
             <div className="bg-date-50 rounded-xl p-6 mb-6">
               <p className="text-sm text-date-600 leading-relaxed mb-4">
-                Interested in this variety? Get in touch to discuss pricing, quantities, and delivery options.
+                Interested in this variety? Contact the shop to discuss availability, pricing, quantity, and possible arrangements.
               </p>
               <Link
                 to={`/contact?product=${product.slug}`}
@@ -111,7 +111,9 @@ export function ProductDetailPage() {
                   <div className="aspect-[4/3] overflow-hidden bg-date-100">
                     <img
                       src={p.image_url || PRODUCT_IMAGES[p.slug] || PLACEHOLDER_IMAGES.datesBowl}
-                      alt={p.name}
+                      alt={p.image_url ? p.name : `${p.name} — representative image`}
+                      width="940"
+                      height="705"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />

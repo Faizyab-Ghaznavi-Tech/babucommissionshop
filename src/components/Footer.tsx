@@ -1,127 +1,71 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle, Facebook, Instagram } from 'lucide-react';
-import { useWebsiteSettings } from '@/hooks/useData';
+import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import type { WebsiteSettings } from '@/types/database';
+import { getTelHref } from '@/lib/contact';
+import { Brand } from './Brand';
+import { WhatsAppAction } from './WhatsAppAction';
 
-export function Footer() {
-  const { settings } = useWebsiteSettings();
-  const businessName = settings?.business_name ?? 'Babu Commission Shop';
+interface FooterProps {
+  settings: WebsiteSettings | null;
+}
+
+function safeExternalUrl(value?: string | null): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+export function Footer({ settings }: FooterProps) {
+  const businessName = settings?.business_name || 'Babu Commission Shop';
+  const phoneHref = getTelHref(settings?.phone);
+  const facebookUrl = safeExternalUrl(settings?.facebook_url);
+  const instagramUrl = safeExternalUrl(settings?.instagram_url);
 
   return (
-    <footer className="bg-date-900 text-cream/70">
-      <div className="container-prose py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              {settings?.logo_url ? (
-                <img src={settings.logo_url} alt={businessName} className="h-10 w-10 object-contain rounded-lg" />
-              ) : (
-                <div className="h-10 w-10 rounded-lg bg-date-600 flex items-center justify-center text-cream font-display font-bold text-lg">
-                  B
-                </div>
-              )}
-              <p className="font-display font-bold text-cream text-lg">{businessName}</p>
-            </div>
-            <p className="text-sm leading-relaxed">
-              {settings?.description?.slice(0, 150) ?? ''}
-              {(settings?.description?.length ?? 0) > 150 ? '...' : ''}
-            </p>
-          </div>
-
-          {/* Quick links */}
-          <div>
-            <h4 className="font-display font-semibold text-cream mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:text-palm-400 transition-colors">Home</Link></li>
-              <li><Link to="/about" className="hover:text-palm-400 transition-colors">About Us</Link></li>
-              <li><Link to="/dates" className="hover:text-palm-400 transition-colors">Date Varieties</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Services</Link></li>
-              <li><Link to="/gallery" className="hover:text-palm-400 transition-colors">Gallery</Link></li>
-              <li><Link to="/contact" className="hover:text-palm-400 transition-colors">Contact</Link></li>
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="font-display font-semibold text-cream mb-4">Our Services</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Direct Farmer Sourcing</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Commission-Based Buying</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Bulk Date Supply</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Custom Packaging</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Ramadan Packaging</Link></li>
-              <li><Link to="/services" className="hover:text-palm-400 transition-colors">Export-Quality Dates</Link></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-display font-semibold text-cream mb-4">Contact</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-3">
-                <MapPin size={18} className="text-palm-400 mt-0.5 shrink-0" />
-                <span>{settings?.address ?? 'New Khajoor Mandi, Khairpur, Sindh, Pakistan'}</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone size={18} className="text-palm-400 shrink-0" />
-                <a href={`tel:${settings?.phone ?? ''}`} className="hover:text-palm-400 transition-colors">
-                  {settings?.phone ?? ''}
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail size={18} className="text-palm-400 shrink-0" />
-                <a href={`mailto:${settings?.email ?? ''}`} className="hover:text-palm-400 transition-colors">
-                  {settings?.email ?? ''}
-                </a>
-              </li>
-            </ul>
-            {/* Social */}
-            <div className="flex items-center gap-3 mt-4">
-              {settings?.whatsapp && (
-                <a
-                  href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg bg-date-800 hover:bg-palm-600 flex items-center justify-center transition-colors"
-                  aria-label="WhatsApp"
-                >
-                  <MessageCircle size={18} className="text-cream" />
-                </a>
-              )}
-              {settings?.facebook_url && (
-                <a
-                  href={settings.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg bg-date-800 hover:bg-palm-600 flex items-center justify-center transition-colors"
-                  aria-label="Facebook"
-                >
-                  <Facebook size={18} className="text-cream" />
-                </a>
-              )}
-              {settings?.instagram_url && (
-                <a
-                  href={settings.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg bg-date-800 hover:bg-palm-600 flex items-center justify-center transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={18} className="text-cream" />
-                </a>
-              )}
-            </div>
-          </div>
+    <footer className="bg-date-950 text-cream/75">
+      <div className="container-prose grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_1fr] lg:py-16">
+        <div>
+          <Link to="/" aria-label={`${businessName} home`}>
+            <Brand businessName={businessName} logoUrl={settings?.logo_url} light />
+          </Link>
+          {settings?.description && <p className="mt-5 max-w-md text-sm leading-6">{settings.description}</p>}
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-date-800 mt-12 pt-6 text-center text-xs text-cream/50">
-          <p>
-            {settings?.footer_content ?? `© ${new Date().getFullYear()} ${businessName}. All rights reserved.`}
-          </p>
-          {settings?.address && (
-            <p className="mt-1">{settings.address}</p>
-          )}
+        <nav aria-label="Footer navigation">
+          <h2 className="mb-4 font-display text-lg font-semibold text-cream">Explore</h2>
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-2 text-sm">
+            <li><Link className="hover:text-white" to="/">Home</Link></li>
+            <li><Link className="hover:text-white" to="/dates">Products</Link></li>
+            <li><Link className="hover:text-white" to="/about">About</Link></li>
+            <li><Link className="hover:text-white" to="/services">Services</Link></li>
+            <li><Link className="hover:text-white" to="/gallery">Gallery</Link></li>
+            <li><Link className="hover:text-white" to="/contact">Contact</Link></li>
+          </ul>
+        </nav>
+
+        <div>
+          <h2 className="mb-4 font-display text-lg font-semibold text-cream">Contact</h2>
+          <ul className="space-y-3 text-sm">
+            {settings?.address && <li className="flex items-start gap-3"><MapPin size={17} className="mt-0.5 shrink-0 text-sand-400" aria-hidden="true" /><span>{settings.address}</span></li>}
+            {phoneHref && <li className="flex items-center gap-3"><Phone size={17} className="shrink-0 text-sand-400" aria-hidden="true" /><a href={phoneHref} className="hover:text-white">{settings?.phone}</a></li>}
+            {settings?.email && <li className="flex items-center gap-3"><Mail size={17} className="shrink-0 text-sand-400" aria-hidden="true" /><a className="break-all hover:text-white" href={`mailto:${settings.email}`}>{settings.email}</a></li>}
+          </ul>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <WhatsAppAction number={settings?.whatsapp} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-cream/25 px-3 text-sm font-medium text-cream hover:bg-cream/10" />
+            {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook (opens in a new tab)" className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-cream/25 hover:bg-cream/10"><Facebook size={18} aria-hidden="true" /></a>}
+            {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram (opens in a new tab)" className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-cream/25 hover:bg-cream/10"><Instagram size={18} aria-hidden="true" /></a>}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-cream/15">
+        <div className="container-prose flex flex-col gap-2 py-5 text-xs text-cream/65 sm:flex-row sm:items-center sm:justify-between">
+          <p>{settings?.footer_content || `© ${new Date().getFullYear()} ${businessName}. All rights reserved.`}</p>
+          {settings?.address && <p>{settings.address}</p>}
         </div>
       </div>
     </footer>

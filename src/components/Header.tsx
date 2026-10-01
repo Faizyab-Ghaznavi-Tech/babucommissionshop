@@ -1,140 +1,73 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, MapPin } from 'lucide-react';
-import { useWebsiteSettings } from '@/hooks/useData';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import type { WebsiteSettings } from '@/types/database';
+import { Brand } from './Brand';
 
-const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/about', label: 'About' },
-  { to: '/dates', label: 'Dates' },
-  { to: '/services', label: 'Services' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/contact', label: 'Contact' },
+interface HeaderProps {
+  settings: WebsiteSettings | null;
+}
+
+const links = [
+  { label: 'Home', to: '/' },
+  { label: 'Products', to: '/dates' },
+  { label: 'About', to: '/about' },
+  { label: 'Our Process', to: '/#process' },
+  { label: 'Wholesale', to: '/#wholesale' },
+  { label: 'Contact', to: '/contact' },
 ];
 
-export function Header() {
-  const { settings } = useWebsiteSettings();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-
-  const businessName = settings?.business_name ?? 'Babu Commission Shop';
-  const logoUrl = settings?.logo_url;
+export function Header({ settings }: HeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
-    <>
-      {/* Top bar */}
-      <div className="hidden md:block bg-date-900 text-cream/80 text-xs">
-        <div className="container-prose flex items-center justify-between py-2">
-          <div className="flex items-center gap-2">
-            <MapPin size={13} className="text-palm-400" />
-            <span>{settings?.address_short ?? 'New Khajoor Mandi, Khairpur'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Phone size={13} className="text-palm-400" />
-            <span>{settings?.phone ?? ''}</span>
-          </div>
-        </div>
+    <header className="sticky top-0 z-40 border-b border-cream/10 bg-date-950 text-cream shadow-sm">
+      <a href="#main-content" className="sr-only z-50 rounded-md bg-white px-4 py-3 text-date-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+        Skip to main content
+      </a>
+      <div className="container-prose flex min-h-[4.5rem] items-center justify-between gap-4 py-2">
+        <Link to="/" aria-label={`${settings?.business_name || 'Babu Commission Shop'} home`} onClick={closeMenu}>
+          <Brand businessName={settings?.business_name || 'Babu Commission Shop'} logoUrl={settings?.logo_url} light />
+        </Link>
+
+        <nav aria-label="Main navigation" className="hidden items-center gap-6 lg:flex">
+          {links.map((link) => (
+            <Link key={link.label} to={link.to} className="text-sm font-medium text-cream/80 transition-colors hover:text-white">
+              {link.label}
+            </Link>
+          ))}
+          <Link to="/#wholesale" className="rounded-md bg-sand-500 px-4 py-2.5 text-sm font-semibold text-date-950 transition-colors hover:bg-sand-400">
+            Get a Quote
+          </Link>
+        </nav>
+
+        <button
+          type="button"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-cream/20 text-cream hover:bg-cream/10 lg:hidden"
+          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+        </button>
       </div>
 
-      {/* Main header */}
-      <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-cream/95 backdrop-blur-md shadow-md'
-            : 'bg-cream'
-        }`}
-      >
-        <div className="container-prose">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              {logoUrl ? (
-                <img src={logoUrl} alt={businessName} className="h-10 w-10 md:h-12 md:w-12 object-contain rounded-lg" />
-              ) : (
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-date-700 flex items-center justify-center text-cream font-display font-bold text-lg">
-                  B
-                </div>
-              )}
-              <div className="hidden sm:block">
-                <p className="font-display font-bold text-date-800 text-lg leading-tight group-hover:text-date-600 transition-colors">
-                  {businessName}
-                </p>
-                <p className="text-xs text-date-400 leading-tight">Khairpur Dates</p>
-              </div>
+      {menuOpen && (
+        <nav id="mobile-navigation" aria-label="Mobile navigation" className="border-t border-cream/10 bg-date-950 px-4 pb-4 pt-2 lg:hidden">
+          <div className="container-prose flex flex-col">
+            {links.map((link) => (
+              <Link key={link.label} to={link.to} onClick={closeMenu} className="rounded-md px-3 py-3 text-sm font-medium text-cream/85 hover:bg-cream/10 hover:text-white">
+                {link.label}
+              </Link>
+            ))}
+            <Link to="/#wholesale" onClick={closeMenu} className="btn-primary mt-2">
+              Get a Quote
             </Link>
-
-            {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  end={link.to === '/'}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'text-date-800 bg-date-100'
-                        : 'text-date-600 hover:text-date-800 hover:bg-date-50'
-                    }`
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              ))}
-              <Link to="/contact" className="btn-primary ml-2 text-sm py-2.5">
-                Get In Touch
-              </Link>
-            </nav>
-
-            {/* Mobile toggle */}
-            <button
-              className="md:hidden p-2 rounded-lg text-date-700 hover:bg-date-100 transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
           </div>
-        </div>
-
-        {/* Mobile nav */}
-        {mobileOpen && (
-          <nav className="md:hidden border-t border-date-100 bg-cream animate-fade-in">
-            <div className="container-prose py-4 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  end={link.to === '/'}
-                  className={({ isActive }) =>
-                    `px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'text-date-800 bg-date-100'
-                        : 'text-date-600 hover:text-date-800 hover:bg-date-50'
-                    }`
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              ))}
-              <Link to="/contact" className="btn-primary mt-2 justify-center">
-                Get In Touch
-              </Link>
-            </div>
-          </nav>
-        )}
-      </header>
-    </>
+        </nav>
+      )}
+    </header>
   );
 }

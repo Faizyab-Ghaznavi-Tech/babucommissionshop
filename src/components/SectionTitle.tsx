@@ -28,7 +28,7 @@ export function SectionTitle({ eyebrow, title, subtitle, center, light }: Sectio
   );
 }
 
-export function PageHeader({ title, subtitle, image }: { title: string; subtitle?: string; image?: string }) {
+export function PageHeader({ title, subtitle, image, eyebrow }: { title: string; subtitle?: string; image?: string; eyebrow?: string }) {
   return (
     <div className="relative overflow-hidden bg-date-800 pt-32 pb-16 md:pt-40 md:pb-20">
       {image && (
@@ -38,6 +38,7 @@ export function PageHeader({ title, subtitle, image }: { title: string; subtitle
         </div>
       )}
       <div className="relative container-prose">
+        {eyebrow && <p className="eyebrow mb-3 text-sand-300">{eyebrow}</p>}
         <h1 className="text-4xl md:text-5xl font-display font-bold text-cream text-balance">
           {title}
         </h1>

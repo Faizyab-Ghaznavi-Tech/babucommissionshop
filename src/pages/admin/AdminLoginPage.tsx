@@ -5,10 +5,9 @@ import { useAuth } from '@/context/AuthContext';
 import { SEO } from '@/components/SEO';
 
 export function AdminLoginPage() {
-  const { signIn, signUp, session, loading } = useAuth();
+  const { signIn, session, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,15 +21,10 @@ export function AdminLoginPage() {
     setError('');
     setSubmitting(true);
 
-    const fn = mode === 'signin' ? signIn : signUp;
-    const { error } = await fn(email, password);
+    const { error } = await signIn(email, password);
 
     if (error) {
       setError(error);
-      setSubmitting(false);
-    } else if (mode === 'signup') {
-      setError('Account created. Please sign in with your credentials.');
-      setMode('signin');
       setSubmitting(false);
     } else {
       navigate('/admin');
@@ -39,7 +33,7 @@ export function AdminLoginPage() {
 
   return (
     <>
-      <SEO title="Admin Login | Babu Commission Shop" />
+      <SEO title="Admin Login | Babu Commission Shop" noIndex />
       <div className="min-h-screen flex items-center justify-center bg-date-900 px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
@@ -52,7 +46,7 @@ export function AdminLoginPage() {
 
           <div className="bg-cream rounded-2xl p-8 shadow-2xl">
             <h2 className="text-xl font-display font-bold text-date-800 mb-6">
-              {mode === 'signin' ? 'Sign In' : 'Create Account'}
+              Sign In
             </h2>
 
             {error && (
@@ -100,27 +94,10 @@ export function AdminLoginPage() {
                 disabled={submitting}
                 className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+                {submitting ? 'Please wait...' : 'Sign In'}
               </button>
             </form>
-
-            <div className="mt-6 text-center text-sm">
-              {mode === 'signin' ? (
-                <p className="text-date-500">
-                  Don't have an account?{' '}
-                  <button onClick={() => { setMode('signup'); setError(''); }} className="text-date-700 font-medium hover:underline">
-                    Create one
-                  </button>
-                </p>
-              ) : (
-                <p className="text-date-500">
-                  Already have an account?{' '}
-                  <button onClick={() => { setMode('signin'); setError(''); }} className="text-date-700 font-medium hover:underline">
-                    Sign in
-                  </button>
-                </p>
-              )}
-            </div>
+            <p className="mt-5 text-center text-xs leading-5 text-date-500">Admin accounts are created by a project administrator.</p>
           </div>
 
           <div className="text-center mt-6">

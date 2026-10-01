@@ -48,7 +48,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   return (
     <>
-      <SEO title={`${title} | Admin`} />
+      <SEO title={`${title} | Admin`} noIndex />
       <div className="min-h-screen bg-date-50 flex">
         {/* Sidebar — desktop */}
         <aside className="hidden md:flex w-64 bg-date-900 text-cream/70 flex-col fixed inset-y-0 left-0 z-30">

@@ -46,6 +46,7 @@ export function AdminEnquiriesPage() {
       const q = search.toLowerCase();
       return (
         m.name.toLowerCase().includes(q) ||
+        (m.business_name || '').toLowerCase().includes(q) ||
         m.phone.toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q) ||
         m.subject.toLowerCase().includes(q) ||
@@ -118,7 +119,7 @@ export function AdminEnquiriesPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-date-400" />
-          <input type="text" placeholder="Search enquiries..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field pl-10" />
+          <input type="search" aria-label="Search enquiries" placeholder="Search enquiries..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field pl-10" />
         </div>
       </div>
 
@@ -128,7 +129,9 @@ export function AdminEnquiriesPage() {
         {filterTabs.map(tab => (
           <button
             key={tab.key}
+            type="button"
             onClick={() => setFilter(tab.key)}
+            aria-pressed={filter === tab.key}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === tab.key ? 'bg-date-700 text-cream' : 'bg-cream text-date-600 border border-date-200 hover:bg-date-50'
             }`}
@@ -146,32 +149,25 @@ export function AdminEnquiriesPage() {
         <div className="bg-cream rounded-xl border border-date-100 overflow-hidden">
           <div className="divide-y divide-date-50">
             {filtered.map((msg) => (
-              <div
-                key={msg.id}
-                className="flex items-center gap-3 p-4 hover:bg-date-50/50 transition-colors cursor-pointer"
-                onClick={() => openDetail(msg)}
-              >
-                <div className={`w-2 h-2 rounded-full shrink-0 ${msg.is_read ? 'bg-date-200' : 'bg-palm-500'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className={`font-medium text-date-800 truncate ${!msg.is_read ? 'font-bold' : ''}`}>
-                      {msg.name}
-                    </p>
-                    {!msg.is_read && <span className="text-xs px-2 py-0.5 rounded-full bg-palm-100 text-palm-700">New</span>}
-                    {msg.is_archived && <span className="text-xs px-2 py-0.5 rounded-full bg-date-100 text-date-500">Archived</span>}
-                  </div>
-                  <p className="text-sm text-date-400 truncate">
-                    {msg.subject || msg.message || 'No subject'}
-                  </p>
-                </div>
-                <div className="text-xs text-date-400 shrink-0 hidden sm:block">
-                  {formatDateTime(msg.created_at)}
-                </div>
-                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div key={msg.id} className="flex items-center gap-3 p-2 transition-colors hover:bg-date-50/50 sm:p-4">
+                <button type="button" onClick={() => openDetail(msg)} className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-1 text-left">
+                  <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${msg.is_read ? 'bg-date-200' : 'bg-palm-500'}`} />
+                  <span className="block min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className={`truncate font-medium text-date-800 ${!msg.is_read ? 'font-bold' : ''}`}>{msg.name}</span>
+                      {!msg.is_read && <span className="rounded-full bg-palm-100 px-2 py-0.5 text-xs text-palm-700">New</span>}
+                      {msg.is_archived && <span className="rounded-full bg-date-100 px-2 py-0.5 text-xs text-date-500">Archived</span>}
+                    </span>
+                    <span className="block truncate text-sm text-date-500">{[msg.business_name, msg.subject || msg.message || 'No subject'].filter(Boolean).join(' · ')}</span>
+                  </span>
+                  <span className="hidden shrink-0 text-xs text-date-500 sm:block">{formatDateTime(msg.created_at)}</span>
+                </button>
+                <div className="flex shrink-0 items-center gap-1">
                   <button
                     onClick={() => markRead(msg.id, !msg.is_read)}
                     className="p-1.5 rounded-lg hover:bg-date-100 transition-colors text-date-600"
                     title={msg.is_read ? 'Mark as unread' : 'Mark as read'}
+                    aria-label={msg.is_read ? `Mark ${msg.name}'s enquiry as unread` : `Mark ${msg.name}'s enquiry as read`}
                   >
                     {msg.is_read ? <MailOpen size={16} /> : <Mail size={16} />}
                   </button>
@@ -179,6 +175,7 @@ export function AdminEnquiriesPage() {
                     onClick={() => toggleArchive(msg)}
                     className="p-1.5 rounded-lg hover:bg-date-100 transition-colors text-date-600"
                     title={msg.is_archived ? 'Unarchive' : 'Archive'}
+                    aria-label={`${msg.is_archived ? 'Unarchive' : 'Archive'} ${msg.name}'s enquiry`}
                   >
                     <Archive size={16} />
                   </button>
@@ -186,6 +183,7 @@ export function AdminEnquiriesPage() {
                     onClick={() => setDeleteTarget(msg)}
                     className="p-1.5 rounded-lg hover:bg-red-50 transition-colors text-red-500"
                     title="Delete"
+                    aria-label={`Delete ${msg.name}'s enquiry`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -209,6 +207,10 @@ export function AdminEnquiriesPage() {
                 <p className="text-xs text-date-400 uppercase tracking-wider mb-1">Date</p>
                 <p className="font-medium text-date-800">{formatDateTime(selected.created_at)}</p>
               </div>
+              {selected.business_name && <div className="bg-date-50 rounded-lg p-4">
+                <p className="text-xs text-date-400 uppercase tracking-wider mb-1">Business</p>
+                <p className="font-medium text-date-800">{selected.business_name}</p>
+              </div>}
               <div className="bg-date-50 rounded-lg p-4">
                 <p className="text-xs text-date-400 uppercase tracking-wider mb-1">Phone</p>
                 <a href={`tel:${selected.phone}`} className="font-medium text-date-800 flex items-center gap-2 hover:text-palm-600 transition-colors">

@@ -61,6 +61,7 @@ export interface Service {
 export interface ContactMessage {
   id: string;
   name: string;
+  business_name: string;
   phone: string;
   email: string;
   subject: string;
