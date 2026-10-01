@@ -34,7 +34,7 @@ export function PageHeader({ title, subtitle, image, eyebrow }: { title: string;
     <div className="relative overflow-hidden bg-date-800 pt-32 pb-16 md:pt-40 md:pb-20">
       {image && (
         <div className="absolute inset-0">
-          <MediaImage src={image} alt="" className="w-full h-full object-cover opacity-20" />
+          <MediaImage src={image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" fallbackLabel={false} stockPhotoVariant="hero" />
           <div className="absolute inset-0 bg-gradient-to-b from-date-900/60 to-date-800/80" />
         </div>
       )}

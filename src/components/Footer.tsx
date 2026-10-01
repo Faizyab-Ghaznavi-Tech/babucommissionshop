@@ -26,7 +26,7 @@ export function Footer({ settings }: FooterProps) {
   const instagramUrl = safeExternalUrl(settings?.instagram_url);
 
   return (
-    <footer className="bg-date-950 text-cream/75">
+    <footer className="bg-date-800 text-cream/75">
       <div className="container-prose grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_1fr] lg:py-16">
         <div>
           <Link to="/" aria-label={`${businessName} home`}>

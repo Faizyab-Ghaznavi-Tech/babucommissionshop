@@ -6,7 +6,6 @@ import { PageHeader } from '@/components/SectionTitle';
 import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
 import { MediaImage } from '@/components/MediaImage';
 import { useProducts } from '@/hooks/useData';
-import { PLACEHOLDER_IMAGES, PRODUCT_IMAGES } from '@/lib/constants';
 
 export function DatesPage() {
   const { products, loading, error } = useProducts();
@@ -21,7 +20,7 @@ export function DatesPage() {
   }), [products, search, category]);
 
   return (
-    <PublicLayout title="Date Varieties" description="Browse the date varieties listed by Babu Commission Shop and contact us to ask about availability." image={PLACEHOLDER_IMAGES.heroDates}>
+    <PublicLayout title="Date Varieties" description="Browse the date varieties listed by Babu Commission Shop and contact us to ask about availability.">
       <PageHeader eyebrow="Our dates" title="Date varieties" subtitle="Browse the date varieties currently listed by Babu Commission Shop. Contact us to ask about availability and quantities." />
       <section className="section-padding bg-cream">
         <div className="container-prose">
@@ -42,9 +41,8 @@ export function DatesPage() {
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((product) => {
-                const image = product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl;
                 return <Link key={product.id} to={`/dates/${product.slug}`} className="card group overflow-hidden">
-                  <div className="aspect-[4/3] overflow-hidden bg-date-100"><MediaImage src={image} alt={product.image_url ? product.name : `${product.name} — representative image`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /></div>
+                  <div className="aspect-[4/3] overflow-hidden bg-date-100"><MediaImage src={product.image_url || undefined} alt={product.image_url ? product.name : `${product.name} — representative stock photo`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" fallbackLabel={false} stockPhotoVariant={product.slug} /></div>
                   <div className="p-5">
                     {product.category && <p className="eyebrow">{product.category}</p>}
                     <h2 className="mt-2 font-display text-xl font-semibold text-date-950 group-hover:text-date-700">{product.name}</h2>

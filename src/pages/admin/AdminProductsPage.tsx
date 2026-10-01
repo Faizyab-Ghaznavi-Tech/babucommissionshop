@@ -6,7 +6,6 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { LoadingSpinner, EmptyState } from '@/components/States';
 import { supabase } from '@/lib/supabase';
 import { generateSlug } from '@/lib/storage';
-import { PRODUCT_IMAGES } from '@/lib/constants';
 import type { Product } from '@/types/database';
 
 const emptyForm = {
@@ -76,7 +75,7 @@ export function AdminProductsPage() {
       slug,
       description: form.description.trim(),
       category: form.category.trim(),
-      image_url: form.image_url || PRODUCT_IMAGES[slug] || '',
+      image_url: form.image_url || '',
       sort_order: form.sort_order,
       featured: form.featured,
       is_enabled: form.is_enabled,

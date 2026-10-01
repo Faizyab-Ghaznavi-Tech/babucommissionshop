@@ -4,6 +4,7 @@ export interface WebsiteSettings {
   tagline: string;
   logo_url: string;
   favicon_url: string;
+  hero_image_url: string;
   phone: string;
   whatsapp: string;
   email: string;

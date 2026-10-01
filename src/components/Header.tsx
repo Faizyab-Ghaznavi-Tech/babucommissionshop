@@ -22,7 +22,7 @@ export function Header({ settings }: HeaderProps) {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cream/10 bg-date-950 text-cream shadow-sm">
+    <header className="sticky top-0 z-40 border-b border-cream/10 bg-date-800 text-cream shadow-sm">
       <a href="#main-content" className="sr-only z-50 rounded-md bg-white px-4 py-3 text-date-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
         Skip to main content
       </a>
@@ -55,7 +55,7 @@ export function Header({ settings }: HeaderProps) {
       </div>
 
       {menuOpen && (
-        <nav id="mobile-navigation" aria-label="Mobile navigation" className="border-t border-cream/10 bg-date-950 px-4 pb-4 pt-2 lg:hidden">
+        <nav id="mobile-navigation" aria-label="Mobile navigation" className="border-t border-cream/10 bg-date-800 px-4 pb-4 pt-2 lg:hidden">
           <div className="container-prose flex flex-col">
             {links.map((link) => (
               <Link key={link.label} to={link.to} onClick={closeMenu} className="rounded-md px-3 py-3 text-sm font-medium text-cream/85 hover:bg-cream/10 hover:text-white">

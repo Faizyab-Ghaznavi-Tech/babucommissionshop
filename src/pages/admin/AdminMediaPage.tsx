@@ -5,9 +5,11 @@ import { ConfirmDialog } from '@/components/admin/Dialogs';
 import { LoadingSpinner, EmptyState } from '@/components/States';
 import { supabase } from '@/lib/supabase';
 import { uploadAndRegisterImage, validateImageFile, deleteFile, formatBytes, formatDate } from '@/lib/storage';
+import { useWebsiteSettings } from '@/hooks/useData';
 import type { MediaItem } from '@/types/database';
 
 export function AdminMediaPage() {
+  const { settings, setSettings, loading: settingsLoading } = useWebsiteSettings();
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -16,6 +18,7 @@ export function AdminMediaPage() {
   const [notice, setNotice] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
+  const [settingHeroId, setSettingHeroId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchMedia = async () => {
@@ -77,6 +80,11 @@ export function AdminMediaPage() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
+    if (settings?.hero_image_url === deleteTarget.file_url) {
+      setError('This image is currently used as the homepage hero. Remove or replace it in Website Settings before deleting it.');
+      setDeleteTarget(null);
+      return;
+    }
     setError('');
     try {
       const storageResult = await deleteFile(deleteTarget.file_path);
@@ -95,6 +103,30 @@ export function AdminMediaPage() {
       await fetchMedia();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Could not delete this media file.');
+    }
+  };
+
+  const setAsHomepageHero = async (item: MediaItem) => {
+    setError('');
+    setNotice('');
+    setSettingHeroId(item.id);
+
+    try {
+      const result = settings
+        ? await supabase.from('website_settings').update({ hero_image_url: item.file_url }).eq('id', settings.id).select('*').single()
+        : await supabase.from('website_settings').insert({ hero_image_url: item.file_url }).select('*').single();
+
+      if (result.error) {
+        setError(result.error.message);
+        return;
+      }
+
+      setSettings(result.data);
+      setNotice(`${item.filename} is now selected for the homepage hero.`);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not set the homepage hero image.');
+    } finally {
+      setSettingHeroId(null);
     }
   };
 
@@ -168,6 +200,14 @@ export function AdminMediaPage() {
                 <p className="text-xs font-medium text-date-700 truncate">{m.filename}</p>
                 <p className="text-xs text-date-400">{formatBytes(m.file_size)}</p>
                 <p className="text-xs text-date-300 mt-0.5">{formatDate(m.created_at)}</p>
+                <button
+                  type="button"
+                  onClick={() => setAsHomepageHero(m)}
+                  disabled={settingsLoading || settingHeroId !== null}
+                  className={`mt-2 w-full rounded-lg px-2 py-2 text-xs font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${settings?.hero_image_url === m.file_url ? 'bg-palm-100 text-palm-800' : 'bg-white text-date-700 hover:bg-date-50'}`}
+                >
+                  {settingHeroId === m.id ? 'Applying...' : settings?.hero_image_url === m.file_url ? 'Current homepage hero' : 'Use as homepage hero'}
+                </button>
               </div>
             </div>
           ))}

@@ -4,7 +4,6 @@ import { PublicLayout } from '@/components/PublicLayout';
 import { LoadingSpinner, ErrorState } from '@/components/States';
 import { MediaImage } from '@/components/MediaImage';
 import { useProduct, useProducts } from '@/hooks/useData';
-import { PLACEHOLDER_IMAGES, PRODUCT_IMAGES } from '@/lib/constants';
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -35,7 +34,7 @@ export function ProductDetailPage() {
     );
   }
 
-  const imageUrl = product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl;
+  const imageUrl = product.image_url || undefined;
   const related = products.filter(p => p.id !== product.id && p.category === product.category).slice(0, 3);
   const otherProducts = related.length > 0 ? related : products.filter(p => p.id !== product.id).slice(0, 3);
 
@@ -57,7 +56,7 @@ export function ProductDetailPage() {
       <section className="pb-16">
         <div className="container-prose grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="aspect-square rounded-2xl overflow-hidden shadow-xl bg-date-100">
-            <MediaImage src={imageUrl} alt={product.image_url ? product.name : `${product.name} — representative image`} className="w-full h-full object-cover" />
+            <MediaImage src={imageUrl} alt={product.image_url ? product.name : `${product.name} — representative stock photo`} className="w-full h-full object-cover" fallbackLabel={false} stockPhotoVariant={product.slug} />
           </div>
           <div className="pt-4">
             {product.category && (
@@ -111,9 +110,11 @@ export function ProductDetailPage() {
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-date-100">
                     <MediaImage
-                      src={p.image_url || PRODUCT_IMAGES[p.slug] || PLACEHOLDER_IMAGES.datesBowl}
-                      alt={p.image_url ? p.name : `${p.name} — representative image`}
+                      src={p.image_url || undefined}
+                      alt={p.image_url ? p.name : `${p.name} — illustrative scene`}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fallbackLabel={false}
+                      stockPhotoVariant={p.slug}
                     />
                   </div>
                   <div className="p-4">

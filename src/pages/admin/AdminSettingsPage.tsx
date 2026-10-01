@@ -13,7 +13,7 @@ export function AdminSettingsPage() {
   const [error, setError] = useState('');
 
   const [form, setForm] = useState({
-    business_name: '', tagline: '', logo_url: '', favicon_url: '',
+    business_name: '', tagline: '', logo_url: '', favicon_url: '', hero_image_url: '',
     phone: '', whatsapp: '', email: '', address: '', address_short: '',
     description: '', facebook_url: '', instagram_url: '', footer_content: '',
     website_title: '', meta_description: '',
@@ -30,6 +30,7 @@ export function AdminSettingsPage() {
       tagline: settings.tagline || '',
       logo_url: settings.logo_url || '',
       favicon_url: settings.favicon_url || '',
+      hero_image_url: settings.hero_image_url || '',
       phone: settings.phone || '',
       whatsapp: settings.whatsapp || '',
       email: settings.email || '',
@@ -121,6 +122,13 @@ export function AdminSettingsPage() {
               aspect="aspect-square"
             />
           </div>
+          <ImageUpload
+            label="Homepage Hero Image"
+            value={form.hero_image_url}
+            onChange={(url) => setForm(prev => ({ ...prev, hero_image_url: url }))}
+            onRemove={() => setForm(prev => ({ ...prev, hero_image_url: '' }))}
+            aspect="aspect-[16/6]"
+          />
         </div>
 
         {/* Contact info */}

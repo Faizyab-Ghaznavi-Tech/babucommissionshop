@@ -5,7 +5,6 @@ import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
 import { LoadingSpinner } from '@/components/States';
 import { useAboutContent, useWebsiteSettings } from '@/hooks/useData';
-import { PLACEHOLDER_IMAGES } from '@/lib/constants';
 import { sanitizeAboutContent, sanitizePublicSettings } from '@/lib/siteContent';
 
 export function AboutPage() {
@@ -20,7 +19,7 @@ export function AboutPage() {
     <PublicLayout
       title="About Us"
       description={about?.business_description || settings?.meta_description || 'Learn about Babu Commission Shop and browse date varieties listed from Khairpur.'}
-      image={about?.image_1_url || PLACEHOLDER_IMAGES.palmPlantation}
+      image={about?.image_1_url || undefined}
     >
       <PageHeader eyebrow="About" title={`About ${settings?.business_name || 'Babu Commission Shop'}`} subtitle="A place to explore date varieties and discuss your requirements." />
       {loading ? <LoadingSpinner label="Loading about content..." /> : (
@@ -39,7 +38,7 @@ export function AboutPage() {
                 <Link to="/contact" className="btn-primary mt-7">Talk with the shop <ArrowRight size={17} aria-hidden="true" /></Link>
               </div>
               <div className="aspect-[4/3] overflow-hidden rounded-md border border-date-200 bg-date-100 shadow-sm">
-                <MediaImage src={images[0] || PLACEHOLDER_IMAGES.palmPlantation} alt={images[0] ? 'Image provided by Babu Commission Shop' : 'Representative date palm image'} className="h-full w-full object-cover" />
+                <MediaImage src={images[0]} alt={images[0] ? 'Image provided by Babu Commission Shop' : 'Date palm grove (representative stock photo)'} className="h-full w-full object-cover" fallbackLabel={false} stockPhotoVariant="about" />
               </div>
             </div>
           </section>
