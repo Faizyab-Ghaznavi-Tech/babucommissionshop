@@ -4,7 +4,6 @@ import type {
   WebsiteSettings, AboutContent, Product, Service,
   ContactMessage, Announcement, GalleryItem, MediaItem,
 } from '@/types/database';
-import { isUnverifiedSeedProduct, isUnverifiedSeedService } from '@/lib/siteContent';
 
 interface WebsiteSettingsContextValue {
   settings: WebsiteSettings | null;
@@ -48,80 +47,109 @@ export function useWebsiteSettings() {
 export function useAboutContent() {
   const [about, setAbout] = useState<AboutContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    supabase
+    Promise.resolve(supabase
       .from('about_content')
       .select('*')
       .limit(1)
-      .maybeSingle()
+      .maybeSingle())
       .then(({ data, error }) => {
-        if (!error) setAbout(data);
+        if (error) setError(error.message);
+        else setAbout(data);
+        setLoading(false);
+      })
+      .catch((queryError: unknown) => {
+        setError(queryError instanceof Error ? queryError.message : 'Could not load shop information.');
         setLoading(false);
       });
   }, []);
 
-  return { about, loading, setAbout };
+  return { about, loading, error, setAbout };
 }
 
 export function useProducts(publicOnly = true) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
+    setLoading(true);
     let query = supabase.from('products').select('*').order('sort_order', { ascending: true });
     if (publicOnly) {
       query = query.eq('is_enabled', true);
     }
-    query.then(({ data, error }) => {
-      if (!error && data) setProducts(publicOnly ? data.filter((product) => !isUnverifiedSeedProduct(product)) : data);
+    Promise.resolve(query).then(({ data, error }) => {
+      if (error) setError(error.message);
+      else if (data) setProducts(data);
+      setLoading(false);
+    }).catch((queryError: unknown) => {
+      setError(queryError instanceof Error ? queryError.message : 'Could not load date varieties.');
       setLoading(false);
     });
   }, [publicOnly]);
 
-  return { products, loading, setProducts };
+  return { products, loading, error, setProducts };
 }
 
 export function useProduct(slug: string | undefined) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setProduct(null);
+    setError('');
+    setLoading(true);
     if (!slug) {
       setLoading(false);
       return;
     }
-    supabase
+    Promise.resolve(supabase
       .from('products')
       .select('*')
       .eq('slug', slug)
       .eq('is_enabled', true)
-      .maybeSingle()
+      .maybeSingle())
       .then(({ data, error }) => {
-        if (!error && data && !isUnverifiedSeedProduct(data)) setProduct(data);
+        if (error) setError(error.message);
+        else setProduct(data);
+        setLoading(false);
+      })
+      .catch((queryError: unknown) => {
+        setError(queryError instanceof Error ? queryError.message : 'Could not load this date variety.');
         setLoading(false);
       });
   }, [slug]);
 
-  return { product, loading };
+  return { product, loading, error };
 }
 
 export function useServices(publicOnly = true) {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
+    setLoading(true);
     let query = supabase.from('services').select('*').order('sort_order', { ascending: true });
     if (publicOnly) {
       query = query.eq('is_enabled', true);
     }
-    query.then(({ data, error }) => {
-      if (!error && data) setServices(publicOnly ? data.filter((service) => !isUnverifiedSeedService(service)) : data);
+    Promise.resolve(query).then(({ data, error }) => {
+      if (error) setError(error.message);
+      else if (data) setServices(data);
+      setLoading(false);
+    }).catch((queryError: unknown) => {
+      setError(queryError instanceof Error ? queryError.message : 'Could not load services.');
       setLoading(false);
     });
   }, [publicOnly]);
 
-  return { services, loading, setServices };
+  return { services, loading, error, setServices };
 }
 
 export function useContactMessages() {
@@ -167,19 +195,24 @@ export function useAnnouncements(publicOnly = true) {
 export function useGallery(publicOnly = true) {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let query = supabase.from('gallery').select('*').order('sort_order', { ascending: true });
     if (publicOnly) {
       query = query.eq('is_published', true);
     }
-    query.then(({ data, error }) => {
-      if (!error && data) setGallery(data);
+    Promise.resolve(query).then(({ data, error }) => {
+      if (error) setError(error.message);
+      else if (data) setGallery(data);
+      setLoading(false);
+    }).catch((queryError: unknown) => {
+      setError(queryError instanceof Error ? queryError.message : 'Could not load gallery images.');
       setLoading(false);
     });
   }, [publicOnly]);
 
-  return { gallery, loading, setGallery };
+  return { gallery, loading, error, setGallery };
 }
 
 export function useMedia() {

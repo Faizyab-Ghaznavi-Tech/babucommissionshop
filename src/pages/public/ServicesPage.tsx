@@ -1,21 +1,22 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Gift, Handshake, Moon, Package, Ship, Sprout, Truck } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
+import { MediaImage } from '@/components/MediaImage';
 import { PageHeader } from '@/components/SectionTitle';
-import { EmptyState, LoadingSpinner } from '@/components/States';
+import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
 import { useServices } from '@/hooks/useData';
 
 const iconMap: Record<string, typeof Sprout> = { Sprout, Handshake, Package, Truck, Gift, Moon, Ship };
 
 export function ServicesPage() {
-  const { services, loading } = useServices();
+  const { services, loading, error } = useServices();
 
   return (
     <PublicLayout title="Services" description="View the services listed by Babu Commission Shop and ask about Khairpur date sourcing requirements.">
       <PageHeader title="Services" subtitle="Review the services listed here and contact the shop to discuss your requirements." eyebrow="What we do" />
       <section className="section-padding bg-cream">
         <div className="container-prose">
-          {loading ? <LoadingSpinner label="Loading services..." /> : services.length === 0 ? (
+          {loading ? <LoadingSpinner label="Loading services..." /> : error ? <ErrorState message={`Could not load services: ${error}`} /> : services.length === 0 ? (
             <EmptyState title="No services listed" message="Please contact the shop with your requirements." />
           ) : (
             <div className="space-y-5">
@@ -30,7 +31,7 @@ export function ServicesPage() {
                       <Link to={`/contact?service=${encodeURIComponent(service.name)}`} className="btn-text mt-4">Enquire about this service <ArrowRight size={16} aria-hidden="true" /></Link>
                     </div>
                     <div className={`aspect-[4/3] overflow-hidden rounded-md bg-date-100 ${index % 2 === 1 ? 'md:order-1' : ''}`}>
-                      {service.image_url ? <img src={service.image_url} alt={service.name} width="940" height="705" loading="lazy" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><Icon size={64} className="text-date-300" aria-hidden="true" /></div>}
+                      {service.image_url ? <MediaImage src={service.image_url} alt={service.name} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><Icon size={64} className="text-date-300" aria-hidden="true" /></div>}
                     </div>
                   </article>
                 );

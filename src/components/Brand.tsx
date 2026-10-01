@@ -1,4 +1,5 @@
 import { Palmtree } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface BrandProps {
   businessName: string;
@@ -9,15 +10,19 @@ interface BrandProps {
 
 export function Brand({ businessName, logoUrl, light = false, compact = false }: BrandProps) {
   const textColor = light ? 'text-cream' : 'text-date-950';
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  useEffect(() => setLogoFailed(false), [logoUrl]);
 
   return (
     <span className="inline-flex items-center gap-2.5">
-      {logoUrl ? (
+      {logoUrl && !logoFailed ? (
         <img
           src={logoUrl}
           alt=""
           width="44"
           height="44"
+          onError={() => setLogoFailed(true)}
           className="h-10 w-10 shrink-0 rounded-sm object-contain sm:h-11 sm:w-11"
         />
       ) : (

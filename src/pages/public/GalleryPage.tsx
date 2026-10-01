@@ -2,11 +2,12 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
-import { LoadingSpinner, EmptyState } from '@/components/States';
+import { LoadingSpinner, EmptyState, ErrorState } from '@/components/States';
+import { MediaImage } from '@/components/MediaImage';
 import { useGallery } from '@/hooks/useData';
 
 export function GalleryPage() {
-  const { gallery, loading } = useGallery(true);
+  const { gallery, loading, error } = useGallery(true);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [category, setCategory] = useState('All');
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -100,6 +101,8 @@ export function GalleryPage() {
 
           {loading ? (
             <LoadingSpinner label="Loading gallery..." />
+          ) : error ? (
+            <ErrorState message={`Could not load gallery images: ${error}`} />
           ) : filtered.length === 0 ? (
             <EmptyState title="No images available" message="Gallery images will appear here once published." />
           ) : (
@@ -112,11 +115,10 @@ export function GalleryPage() {
                   aria-label={`Open image: ${item.caption || item.alt_text || 'Gallery photo'}`}
                   className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer bg-date-100"
                 >
-                  <img
+                  <MediaImage
                     src={item.image_url}
-                    alt={item.alt_text || item.caption}
+                    alt={item.alt_text || item.caption || 'Gallery photo'}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
                   />
                   {item.caption && (
                     <div className="absolute inset-0 bg-gradient-to-t from-date-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
@@ -165,9 +167,9 @@ export function GalleryPage() {
             <ChevronRight size={28} />
           </button>
           <div className="max-w-5xl max-h-[85vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            <img
+            <MediaImage
               src={filtered[lightbox].image_url}
-              alt={filtered[lightbox].alt_text || filtered[lightbox].caption}
+              alt={filtered[lightbox].alt_text || filtered[lightbox].caption || 'Gallery photo'}
               className="max-w-full max-h-[75vh] object-contain rounded-lg"
             />
             {(filtered[lightbox].caption || filtered[lightbox].category) && (

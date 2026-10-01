@@ -2,15 +2,16 @@ import { ArrowRight, Check, MapPin, Package, Sprout, Truck } from 'lucide-react'
 import { Link } from 'react-router-dom';
 import { EnquiryForm } from '@/components/EnquiryForm';
 import { PublicLayout } from '@/components/PublicLayout';
+import { MediaImage } from '@/components/MediaImage';
 import { SectionTitle } from '@/components/SectionTitle';
-import { EmptyState, LoadingSpinner } from '@/components/States';
+import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
 import { useAboutContent, useProducts, useServices, useWebsiteSettings } from '@/hooks/useData';
 import { getWhatsAppUrl } from '@/lib/contact';
 import { PLACEHOLDER_IMAGES, PRODUCT_IMAGES } from '@/lib/constants';
 import { sanitizeAboutContent, sanitizePublicSettings } from '@/lib/siteContent';
 
 export function HomePage() {
-  const { products, loading: productsLoading } = useProducts();
+  const { products, loading: productsLoading, error: productsError } = useProducts();
   const { services } = useServices();
   const { about: rawAbout } = useAboutContent();
   const { settings: rawSettings } = useWebsiteSettings();
@@ -45,14 +46,7 @@ export function HomePage() {
           </div>
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="aspect-[4/3] overflow-hidden rounded-md bg-date-100">
-              <img
-                src={PLACEHOLDER_IMAGES.datesBowl}
-                alt="Representative image of dates"
-                width="940"
-                height="705"
-                fetchPriority="high"
-                className="h-full w-full object-cover"
-              />
+              <MediaImage src={PLACEHOLDER_IMAGES.datesBowl} alt="Representative image of dates" fetchPriority="high" loading="eager" className="h-full w-full object-cover" />
             </div>
             {settings?.address_short && <div className="absolute -bottom-4 left-4 rounded-md border border-date-200 bg-white px-4 py-3 text-sm font-medium text-date-900 shadow-md sm:bottom-5 sm:left-5">{settings.address_short}</div>}
           </div>
@@ -70,14 +64,14 @@ export function HomePage() {
       <section className="section-padding bg-white">
         <div className="container-prose">
           <SectionTitle eyebrow="Our Dates" title="Explore date varieties" subtitle="Browse the current varieties listed by Babu Commission Shop. Contact us to ask about availability and quantities." center />
-          {productsLoading ? <LoadingSpinner label="Loading date varieties..." /> : displayProducts.length === 0 ? (
+          {productsLoading ? <LoadingSpinner label="Loading date varieties..." /> : productsError ? <ErrorState message={`Could not load date varieties: ${productsError}`} /> : displayProducts.length === 0 ? (
             <EmptyState title="No products available" message="Please check back soon for date varieties." />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {displayProducts.map((product) => (
                 <Link key={product.id} to={`/dates/${product.slug}`} className="card group overflow-hidden">
                   <div className="aspect-[4/3] overflow-hidden bg-date-100">
-                    <img src={product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl} alt={product.image_url ? product.name : `${product.name} — representative image`} width="940" height="705" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <MediaImage src={product.image_url || PRODUCT_IMAGES[product.slug] || PLACEHOLDER_IMAGES.datesBowl} alt={product.image_url ? product.name : `${product.name} — representative image`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-5">
                     {product.category && <p className="eyebrow">{product.category}</p>}
@@ -93,32 +87,43 @@ export function HomePage() {
         </div>
       </section>
 
-      <section id="process" className="scroll-mt-24 section-padding bg-date-950 text-cream">
-        <div className="container-prose">
-          <SectionTitle eyebrow="How to Enquire" title="A clear way to get started" subtitle="Share what you need, then discuss product options and next steps directly with the shop." center light />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="process" className="scroll-mt-24 section-padding overflow-hidden bg-date-50">
+        <div className="container-prose grid items-center gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+          <div>
+            <p className="eyebrow">A simple process</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold leading-tight text-date-950 sm:text-4xl">From a variety to a clear enquiry.</h2>
+            <p className="mt-4 max-w-lg leading-7 text-date-700">Tell the shop what you are looking for. Confirm availability, grade, price, and terms directly before placing an order.</p>
+            <Link to="/dates" className="btn-primary mt-6">Explore date varieties <ArrowRight size={17} aria-hidden="true" /></Link>
+            <div className="mt-8 aspect-[16/9] overflow-hidden rounded-md border border-date-200 bg-cream shadow-sm">
+              <MediaImage src={PLACEHOLDER_IMAGES.datesRows} alt="Representative image of date varieties" className="h-full w-full object-cover" />
+            </div>
+          </div>
+          <div className="relative grid gap-4 sm:grid-cols-2">
+            <div aria-hidden="true" className="absolute left-[25%] right-[25%] top-1/2 hidden border-t-2 border-dashed border-date-200 sm:block" />
             {[
-              { Icon: Sprout, title: 'Choose a variety', text: 'Browse the listed date varieties or ask about another requirement.' },
-              { Icon: Package, title: 'Share quantities', text: 'Tell us the approximate quantity and intended use.' },
-              { Icon: Check, title: 'Discuss details', text: 'We can follow up to discuss availability, packaging, and terms.' },
-              { Icon: Truck, title: 'Agree next steps', text: 'Confirm arrangements directly with the shop before placing an order.' },
+              { Icon: Sprout, title: 'Choose a variety', text: 'Browse the current list or mention another variety you need.' },
+              { Icon: Package, title: 'Share your needs', text: 'Include an approximate quantity and any requirements.' },
+              { Icon: Check, title: 'Confirm the details', text: 'Ask about current availability, grade, and possible options.' },
+              { Icon: Truck, title: 'Agree next steps', text: 'Confirm price, delivery or pickup, and terms with the shop.' },
             ].map(({ Icon, title: stepTitle, text }, index) => (
-              <article key={stepTitle} className="relative rounded-md border border-cream/15 bg-white/5 p-6">
-                <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-palm-800 text-cream"><Icon size={22} aria-hidden="true" /></span>
-                <p className="text-xs font-bold uppercase tracking-widest text-sand-300">Step {index + 1}</p>
-                <h3 className="mt-2 font-display text-lg font-semibold text-cream">{stepTitle}</h3>
-                <p className="mt-2 text-sm leading-6 text-cream/75">{text}</p>
+              <article key={stepTitle} className="relative rounded-md border border-date-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md sm:p-6">
+                <div className="flex items-center justify-between">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-palm-50 text-palm-800 ring-1 ring-palm-200"><Icon size={22} aria-hidden="true" /></span>
+                  <span className="font-display text-3xl font-semibold text-date-200">0{index + 1}</span>
+                </div>
+                <h3 className="mt-5 font-display text-xl font-semibold text-date-950">{stepTitle}</h3>
+                <p className="mt-2 text-sm leading-6 text-date-700">{text}</p>
               </article>
             ))}
           </div>
-          {services.length > 0 && <div className="mt-8 text-center"><Link to="/services" className="inline-flex min-h-11 items-center gap-2 font-semibold text-cream underline decoration-cream/40 underline-offset-4 hover:text-sand-300">See listed services <ArrowRight size={16} aria-hidden="true" /></Link></div>}
+          {services.length > 0 && <div className="lg:col-start-2"><Link to="/services" className="inline-flex min-h-11 items-center gap-2 font-semibold text-date-800 underline decoration-date-300 underline-offset-4 hover:text-palm-800">See listed services <ArrowRight size={16} aria-hidden="true" /></Link></div>}
         </div>
       </section>
 
       <section className="section-padding bg-cream">
         <div className="container-prose grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="aspect-[4/3] overflow-hidden rounded-md bg-date-100">
-            <img src={about?.image_1_url || PLACEHOLDER_IMAGES.palmPlantation} alt={about?.image_1_url ? 'Image provided by Babu Commission Shop' : 'Representative date palm image'} width="940" height="705" loading="lazy" className="h-full w-full object-cover" />
+            <MediaImage src={about?.image_1_url || PLACEHOLDER_IMAGES.palmPlantation} alt={about?.image_1_url ? 'Image provided by Babu Commission Shop' : 'Representative date palm image'} className="h-full w-full object-cover" />
           </div>
           <div>
             <SectionTitle eyebrow="About" title="Learn more about the shop" />

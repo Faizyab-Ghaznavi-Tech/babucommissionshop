@@ -2,12 +2,13 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Tag } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
 import { LoadingSpinner, ErrorState } from '@/components/States';
+import { MediaImage } from '@/components/MediaImage';
 import { useProduct, useProducts } from '@/hooks/useData';
 import { PLACEHOLDER_IMAGES, PRODUCT_IMAGES } from '@/lib/constants';
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { product, loading } = useProduct(slug);
+  const { product, loading, error: productError } = useProduct(slug);
   const { products } = useProducts();
 
   if (loading) {
@@ -22,7 +23,7 @@ export function ProductDetailPage() {
     return (
       <PublicLayout title="Product Not Found">
         <div className="pt-32 pb-20">
-          <ErrorState message="The date variety you're looking for doesn't exist or is no longer available." />
+          <ErrorState message={productError ? `Could not load this date variety: ${productError}` : "The date variety you're looking for doesn't exist or is no longer available."} />
           <div className="text-center">
             <Link to="/dates" className="btn-secondary">
               <ArrowLeft size={18} />
@@ -56,7 +57,7 @@ export function ProductDetailPage() {
       <section className="pb-16">
         <div className="container-prose grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="aspect-square rounded-2xl overflow-hidden shadow-xl bg-date-100">
-            <img src={imageUrl} alt={product.image_url ? product.name : `${product.name} — representative image`} width="940" height="940" className="w-full h-full object-cover" />
+            <MediaImage src={imageUrl} alt={product.image_url ? product.name : `${product.name} — representative image`} className="w-full h-full object-cover" />
           </div>
           <div className="pt-4">
             {product.category && (
@@ -109,13 +110,10 @@ export function ProductDetailPage() {
                   className="card overflow-hidden group"
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-date-100">
-                    <img
+                    <MediaImage
                       src={p.image_url || PRODUCT_IMAGES[p.slug] || PLACEHOLDER_IMAGES.datesBowl}
                       alt={p.image_url ? p.name : `${p.name} — representative image`}
-                      width="940"
-                      height="705"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
                     />
                   </div>
                   <div className="p-4">

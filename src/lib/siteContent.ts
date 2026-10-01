@@ -1,4 +1,4 @@
-import type { AboutContent, Product, Service, WebsiteSettings } from '@/types/database';
+import type { AboutContent, WebsiteSettings } from '@/types/database';
 import { getTelHref, getWhatsAppUrl } from '@/lib/contact';
 
 function beginsWith(value: string | null | undefined, prefix: string): boolean {
@@ -33,34 +33,4 @@ export function sanitizeAboutContent(about: AboutContent | null): AboutContent |
     vision: beginsWith(about.vision, "To be Pakistan's most trusted name in date sourcing") ? '' : about.vision,
     business_description: beginsWith(about.business_description, 'Babu Commission Shop operates from New Khajoor Mandi, Khairpur') ? '' : about.business_description,
   };
-}
-
-const seedProducts: Record<string, string> = {
-  'chhohara-dried-black': 'Dried black chhohara dates',
-  'chhohara-dried-yellow': 'Golden dried yellow chhohara dates',
-  'rabai-dates-semi-dry': 'Rabai dates in semi-dry grade',
-  'pitted-vacuum-sealed-aseel': 'Premium Aseel dates, pitted and vacuum-sealed',
-  'karbalain-dates-royal-amber': 'Karbalain dates in royal amber grade',
-  'dhakki-dates-soft-succulent': 'Dhakki dates known for their exceptional softness',
-  'aseel-dates-khairpur-super': 'Aseel dates in Khairpur super grade',
-};
-
-export function isUnverifiedSeedProduct(product: Product): boolean {
-  const prefix = seedProducts[product.slug];
-  return !!prefix && beginsWith(product.description, prefix);
-}
-
-const seedServices: Record<string, string> = {
-  'Direct Farmer Sourcing': 'We source dates directly from farmers across the Khairpur region',
-  'Commission-Based Buying': 'Our commission service lets you leverage our market expertise',
-  'Bulk Date Supply': 'Whether you need a few maunds or container loads',
-  'Nationwide Supply': 'We deliver dates across Pakistan',
-  'Custom Brand Packaging': 'Stand out with custom-branded packaging',
-  'Ramadan Special Packaging': 'Our Ramadan packaging service creates beautiful',
-  'Export-Quality Dates': 'We select and prepare dates that meet export standards',
-};
-
-export function isUnverifiedSeedService(service: Service): boolean {
-  const prefix = seedServices[service.name];
-  return !!prefix && beginsWith(service.description, prefix);
 }
