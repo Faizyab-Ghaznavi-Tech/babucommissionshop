@@ -21,29 +21,42 @@ export function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    supabase.from('website_settings').select('*').limit(1).maybeSingle().then(({ data, error }) => {
-      if (!error && data) {
-        setSettings(data);
-        setForm({
-          business_name: data.business_name || '',
-          tagline: data.tagline || '',
-          logo_url: data.logo_url || '',
-          favicon_url: data.favicon_url || '',
-          phone: data.phone || '',
-          whatsapp: data.whatsapp || '',
-          email: data.email || '',
-          address: data.address || '',
-          address_short: data.address_short || '',
-          description: data.description || '',
-          facebook_url: data.facebook_url || '',
-          instagram_url: data.instagram_url || '',
-          footer_content: data.footer_content || '',
-          website_title: data.website_title || '',
-          meta_description: data.meta_description || '',
-        });
+    const loadSettings = async () => {
+      try {
+        const { data, error } = await supabase.from('website_settings').select('*').limit(1).maybeSingle();
+        if (error) {
+          setError(error.message);
+          return;
+        }
+
+        if (data) {
+          setSettings(data);
+          setForm({
+            business_name: data.business_name || '',
+            tagline: data.tagline || '',
+            logo_url: data.logo_url || '',
+            favicon_url: data.favicon_url || '',
+            phone: data.phone || '',
+            whatsapp: data.whatsapp || '',
+            email: data.email || '',
+            address: data.address || '',
+            address_short: data.address_short || '',
+            description: data.description || '',
+            facebook_url: data.facebook_url || '',
+            instagram_url: data.instagram_url || '',
+            footer_content: data.footer_content || '',
+            website_title: data.website_title || '',
+            meta_description: data.meta_description || '',
+          });
+        }
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Could not load website settings.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    void loadSettings();
   }, []);
 
   const handleSave = async (e: FormEvent) => {
@@ -52,17 +65,23 @@ export function AdminSettingsPage() {
     setError('');
     setSaved(false);
 
-    if (settings) {
-      const { error } = await supabase.from('website_settings').update(form).eq('id', settings.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('website_settings').insert(form);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      if (settings) {
+        const { error } = await supabase.from('website_settings').update(form).eq('id', settings.id);
+        if (error) { setError(error.message); return; }
+      } else {
+        const { data, error } = await supabase.from('website_settings').insert(form).select('*').single();
+        if (error) { setError(error.message); return; }
+        setSettings(data);
+      }
 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save website settings.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {

@@ -33,12 +33,19 @@ export function AdminServicesPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [operationError, setOperationError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
 
   const fetchServices = async () => {
-    const { data } = await supabase.from('services').select('*').order('sort_order', { ascending: true });
-    if (data) setServices(data as Service[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('services').select('*').order('sort_order', { ascending: true });
+      if (error) setOperationError(error.message);
+      else setServices(data as Service[]);
+    } catch (fetchError) {
+      setOperationError(fetchError instanceof Error ? fetchError.message : 'Could not load services.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchServices(); }, []);
@@ -79,29 +86,43 @@ export function AdminServicesPage() {
       is_enabled: form.is_enabled,
     };
 
-    if (editing) {
-      const { error } = await supabase.from('services').update(payload).eq('id', editing.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('services').insert(payload);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      const result = editing
+        ? await supabase.from('services').update(payload).eq('id', editing.id)
+        : await supabase.from('services').insert(payload);
+      if (result.error) { setError(result.error.message); return; }
 
-    setSaving(false);
-    setModalOpen(false);
-    fetchServices();
+      setModalOpen(false);
+      await fetchServices();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save this service.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await supabase.from('services').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    fetchServices();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('services').delete().eq('id', deleteTarget.id);
+      if (error) { setOperationError(error.message); return; }
+      setDeleteTarget(null);
+      await fetchServices();
+    } catch (deleteError) {
+      setOperationError(deleteError instanceof Error ? deleteError.message : 'Could not delete this service.');
+    }
   };
 
   const toggleEnabled = async (s: Service) => {
-    await supabase.from('services').update({ is_enabled: !s.is_enabled }).eq('id', s.id);
-    fetchServices();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('services').update({ is_enabled: !s.is_enabled }).eq('id', s.id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchServices();
+    } catch (toggleError) {
+      setOperationError(toggleError instanceof Error ? toggleError.message : 'Could not update this service.');
+    }
   };
 
   return (
@@ -115,6 +136,8 @@ export function AdminServicesPage() {
           <Plus size={18} /> Add Service
         </button>
       </div>
+
+      {operationError && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{operationError}</div>}
 
       {loading ? (
         <LoadingSpinner label="Loading services..." />

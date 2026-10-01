@@ -11,7 +11,7 @@
 
 The app displays a setup message if the Supabase values are missing.
 
-For admin image uploads, apply `supabase/migrations/20261001060000_005_create_media_bucket.sql` in the Supabase SQL Editor. The anon key used by the website cannot create storage buckets.
+For admin image uploads, apply `supabase/migrations/20261001062000_006_configure_media_bucket.sql` in the SQL Editor of the same Supabase project configured by `VITE_SUPABASE_URL`. This creates or repairs the public `media` bucket, its 5 MB image limits, and its storage policies. If the admin shows “Bucket not found”, this migration has not been applied to that project, or the deployed site points to a different Supabase project. The website's anon key cannot create storage buckets.
 
 ## Deploy to Cloudflare Workers
 

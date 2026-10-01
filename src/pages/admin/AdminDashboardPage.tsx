@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package, Mail, Megaphone, Image as ImageIcon, Wrench,
-  TrendingUp, Inbox, Eye,
+  TrendingUp, Inbox,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { supabase } from '@/lib/supabase';
@@ -13,46 +13,62 @@ interface Stats {
   products: number;
   services: number;
   unreadMessages: number;
-  totalMessages: number;
   announcements: number;
   galleryItems: number;
 }
 
 export function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats>({
-    products: 0, services: 0, unreadMessages: 0, totalMessages: 0,
+    products: 0, services: 0, unreadMessages: 0,
     announcements: 0, galleryItems: 0,
   });
   const [recentMessages, setRecentMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    (async () => {
-      const [products, services, messages, announcements, gallery] = await Promise.all([
-        supabase.from('products').select('*', { count: 'exact', head: true }),
-        supabase.from('services').select('*', { count: 'exact', head: true }),
-        supabase.from('contact_messages').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('announcements').select('*', { count: 'exact', head: true }),
-        supabase.from('gallery').select('*', { count: 'exact', head: true }),
-      ]);
+    const loadDashboard = async () => {
+      try {
+        const [products, services, messages, announcements, gallery] = await Promise.all([
+          supabase.from('products').select('*', { count: 'exact', head: true }),
+          supabase.from('services').select('*', { count: 'exact', head: true }),
+          supabase.from('contact_messages').select('*').eq('is_archived', false).order('created_at', { ascending: false }).limit(5),
+          supabase.from('announcements').select('*', { count: 'exact', head: true }),
+          supabase.from('gallery').select('*', { count: 'exact', head: true }),
+        ]);
 
-      const { count: totalMessages } = await supabase
-        .from('contact_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false);
+        const queryError = [products, services, messages, announcements, gallery].find((result) => result.error)?.error;
+        if (queryError) {
+          setError(queryError.message);
+          return;
+        }
 
-      setStats({
-        products: products.count ?? 0,
-        services: services.count ?? 0,
-        unreadMessages: totalMessages ?? 0,
-        totalMessages: (messages.data?.length ?? 0),
-        announcements: announcements.count ?? 0,
-        galleryItems: gallery.count ?? 0,
-      });
+        const { count: unreadMessages, error: unreadError } = await supabase
+          .from('contact_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_read', false)
+          .eq('is_archived', false);
+        if (unreadError) {
+          setError(unreadError.message);
+          return;
+        }
 
-      setRecentMessages(messages.data as ContactMessage[] ?? []);
-      setLoading(false);
-    })();
+        setStats({
+          products: products.count ?? 0,
+          services: services.count ?? 0,
+          unreadMessages: unreadMessages ?? 0,
+          announcements: announcements.count ?? 0,
+          galleryItems: gallery.count ?? 0,
+        });
+        setRecentMessages((messages.data ?? []) as ContactMessage[]);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Could not load the admin dashboard.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadDashboard();
   }, []);
 
   const statCards = [
@@ -68,6 +84,10 @@ export function AdminDashboardPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin w-8 h-8 border-3 border-date-600 border-t-transparent rounded-full" />
+        </div>
+      ) : error ? (
+        <div role="alert" className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+          Could not load dashboard data: {error}
         </div>
       ) : (
         <div className="space-y-6">

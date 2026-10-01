@@ -4,7 +4,7 @@ import {
   Gift, Moon, Ship,
 } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
-import { SectionTitle, PageHeader } from '@/components/SectionTitle';
+import { SectionTitle } from '@/components/SectionTitle';
 import { LoadingSpinner, EmptyState } from '@/components/States';
 import {
   useProducts, useServices, useAnnouncements, useGallery, useWebsiteSettings,

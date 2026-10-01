@@ -23,12 +23,19 @@ export function AdminProductsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [operationError, setOperationError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('sort_order', { ascending: true });
-    if (data) setProducts(data as Product[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('sort_order', { ascending: true });
+      if (error) setOperationError(error.message);
+      else setProducts(data as Product[]);
+    } catch (fetchError) {
+      setOperationError(fetchError instanceof Error ? fetchError.message : 'Could not load products.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchProducts(); }, []);
@@ -59,7 +66,7 @@ export function AdminProductsPage() {
     setError('');
     if (!form.name.trim()) { setError('Name is required'); return; }
 
-    let slug = form.slug.trim() || generateSlug(form.name);
+    const slug = form.slug.trim() || generateSlug(form.name);
     const existing = products.find(p => p.slug === slug && p.id !== editing?.id);
     if (existing) { setError('A product with this slug already exists'); return; }
 
@@ -75,34 +82,54 @@ export function AdminProductsPage() {
       is_enabled: form.is_enabled,
     };
 
-    if (editing) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editing.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('products').insert(payload);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      const result = editing
+        ? await supabase.from('products').update(payload).eq('id', editing.id)
+        : await supabase.from('products').insert(payload);
+      if (result.error) { setError(result.error.message); return; }
 
-    setSaving(false);
-    setModalOpen(false);
-    fetchProducts();
+      setModalOpen(false);
+      await fetchProducts();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save this product.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await supabase.from('products').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    fetchProducts();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', deleteTarget.id);
+      if (error) { setOperationError(error.message); return; }
+      setDeleteTarget(null);
+      await fetchProducts();
+    } catch (deleteError) {
+      setOperationError(deleteError instanceof Error ? deleteError.message : 'Could not delete this product.');
+    }
   };
 
   const toggleEnabled = async (p: Product) => {
-    await supabase.from('products').update({ is_enabled: !p.is_enabled }).eq('id', p.id);
-    fetchProducts();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('products').update({ is_enabled: !p.is_enabled }).eq('id', p.id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchProducts();
+    } catch (toggleError) {
+      setOperationError(toggleError instanceof Error ? toggleError.message : 'Could not update this product.');
+    }
   };
 
   const toggleFeatured = async (p: Product) => {
-    await supabase.from('products').update({ featured: !p.featured }).eq('id', p.id);
-    fetchProducts();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('products').update({ featured: !p.featured }).eq('id', p.id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchProducts();
+    } catch (toggleError) {
+      setOperationError(toggleError instanceof Error ? toggleError.message : 'Could not update this product.');
+    }
   };
 
   return (
@@ -123,6 +150,8 @@ export function AdminProductsPage() {
           Add Product
         </button>
       </div>
+
+      {operationError && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{operationError}</div>}
 
       {loading ? (
         <LoadingSpinner label="Loading products..." />

@@ -3,7 +3,6 @@ import { PageHeader } from '@/components/SectionTitle';
 import { LoadingSpinner } from '@/components/States';
 import { useAboutContent, useWebsiteSettings } from '@/hooks/useData';
 import { PLACEHOLDER_IMAGES } from '@/lib/constants';
-import { SEO } from '@/components/SEO';
 import { Sprout, Eye, Target } from 'lucide-react';
 
 export function AboutPage() {

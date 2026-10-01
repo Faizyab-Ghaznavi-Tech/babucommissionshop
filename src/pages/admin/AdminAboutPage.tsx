@@ -19,21 +19,34 @@ export function AdminAboutPage() {
   });
 
   useEffect(() => {
-    supabase.from('about_content').select('*').limit(1).maybeSingle().then(({ data, error }) => {
-      if (!error && data) {
-        setAbout(data);
-        setForm({
-          company_story: data.company_story || '',
-          mission: data.mission || '',
-          vision: data.vision || '',
-          business_description: data.business_description || '',
-          image_1_url: data.image_1_url || '',
-          image_2_url: data.image_2_url || '',
-          image_3_url: data.image_3_url || '',
-        });
+    const loadAbout = async () => {
+      try {
+        const { data, error } = await supabase.from('about_content').select('*').limit(1).maybeSingle();
+        if (error) {
+          setError(error.message);
+          return;
+        }
+
+        if (data) {
+          setAbout(data);
+          setForm({
+            company_story: data.company_story || '',
+            mission: data.mission || '',
+            vision: data.vision || '',
+            business_description: data.business_description || '',
+            image_1_url: data.image_1_url || '',
+            image_2_url: data.image_2_url || '',
+            image_3_url: data.image_3_url || '',
+          });
+        }
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Could not load about content.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    void loadAbout();
   }, []);
 
   const handleSave = async (e: FormEvent) => {
@@ -42,17 +55,23 @@ export function AdminAboutPage() {
     setError('');
     setSaved(false);
 
-    if (about) {
-      const { error } = await supabase.from('about_content').update(form).eq('id', about.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('about_content').insert(form);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      if (about) {
+        const { error } = await supabase.from('about_content').update(form).eq('id', about.id);
+        if (error) { setError(error.message); return; }
+      } else {
+        const { data, error } = await supabase.from('about_content').insert(form).select('*').single();
+        if (error) { setError(error.message); return; }
+        setAbout(data);
+      }
 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save about content.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {

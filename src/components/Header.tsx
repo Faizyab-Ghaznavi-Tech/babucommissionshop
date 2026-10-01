@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, MapPin } from 'lucide-react';
 import { useWebsiteSettings } from '@/hooks/useData';
-import { PLACEHOLDER_IMAGES } from '@/lib/constants';
 
 const navLinks = [
   { to: '/', label: 'Home' },

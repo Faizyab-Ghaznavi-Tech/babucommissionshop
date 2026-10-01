@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import { uploadFile, deleteFile } from '@/lib/storage';
-import { supabase } from '@/lib/supabase';
-import { formatBytes } from '@/lib/storage';
+import { uploadAndRegisterImage, validateImageFile } from '@/lib/storage';
 
 interface ImageUploadProps {
   value: string;
@@ -22,13 +20,10 @@ export function ImageUpload({ value, onChange, onRemove, label = 'Image', aspect
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be under 5 MB');
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      if (fileRef.current) fileRef.current.value = '';
       return;
     }
 
@@ -36,26 +31,21 @@ export function ImageUpload({ value, onChange, onRemove, label = 'Image', aspect
     setUploading(true);
     setProgress(0);
 
-    const { url, path, error: uploadError } = await uploadFile(file, setProgress);
+    try {
+      const { url, path, error: uploadError } = await uploadAndRegisterImage(file, setProgress);
 
-    if (uploadError) {
-      setError(uploadError);
+      if (uploadError) {
+        setError(uploadError);
+        return;
+      }
+
+      onChange(url, path);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed. Please try again.');
+    } finally {
       setUploading(false);
-      return;
+      if (fileRef.current) fileRef.current.value = '';
     }
-
-    // Save to media library
-    await supabase.from('media').insert({
-      filename: file.name,
-      file_url: url,
-      file_path: path,
-      file_size: file.size,
-      mime_type: file.type,
-    });
-
-    onChange(url, path);
-    setUploading(false);
-    if (fileRef.current) fileRef.current.value = '';
   };
 
   const handleRemove = () => {
@@ -97,7 +87,7 @@ export function ImageUpload({ value, onChange, onRemove, label = 'Image', aspect
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
         onChange={handleUpload}
         className="hidden"
         disabled={uploading || !!value}

@@ -4,7 +4,7 @@ import { AdminLayout } from './AdminLayout';
 import { ConfirmDialog } from '@/components/admin/Dialogs';
 import { LoadingSpinner, EmptyState } from '@/components/States';
 import { supabase } from '@/lib/supabase';
-import { uploadFile, deleteFile, formatBytes, formatDate } from '@/lib/storage';
+import { uploadAndRegisterImage, validateImageFile, deleteFile, formatBytes, formatDate } from '@/lib/storage';
 import type { MediaItem } from '@/types/database';
 
 export function AdminMediaPage() {
@@ -12,14 +12,22 @@ export function AdminMediaPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchMedia = async () => {
-    const { data } = await supabase.from('media').select('*').order('created_at', { ascending: false });
-    if (data) setMedia(data as MediaItem[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false });
+      if (error) setError(error.message);
+      else setMedia(data as MediaItem[]);
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : 'Could not load the media library.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchMedia(); }, []);
@@ -32,40 +40,72 @@ export function AdminMediaPage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    setError('');
+    setNotice('');
     setUploading(true);
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) continue;
-      if (file.size > 5 * 1024 * 1024) continue;
+    let uploadedCount = 0;
+    const failures: string[] = [];
 
-      const { url, path, error } = await uploadFile(file);
-      if (!error && url) {
-        await supabase.from('media').insert({
-          filename: file.name,
-          file_url: url,
-          file_path: path,
-          file_size: file.size,
-          mime_type: file.type,
-        });
+    try {
+      for (const file of Array.from(files)) {
+        const validationError = validateImageFile(file);
+        if (validationError) {
+          failures.push(`${file.name}: ${validationError}`);
+          continue;
+        }
+
+        const result = await uploadAndRegisterImage(file);
+        if (result.error) {
+          failures.push(`${file.name}: ${result.error}`);
+        } else {
+          uploadedCount += 1;
+        }
       }
-    }
 
-    setUploading(false);
-    fetchMedia();
-    if (fileRef.current) fileRef.current.value = '';
+      if (uploadedCount > 0) await fetchMedia();
+      if (failures.length > 0) setError(failures.join(' '));
+      if (uploadedCount > 0) {
+        setNotice(`${uploadedCount} image${uploadedCount === 1 ? '' : 's'} uploaded successfully.`);
+      }
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await deleteFile(deleteTarget.file_path);
-    await supabase.from('media').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    fetchMedia();
+    setError('');
+    try {
+      const storageResult = await deleteFile(deleteTarget.file_path);
+      if (storageResult.error) {
+        setError(storageResult.error);
+        return;
+      }
+
+      const { error } = await supabase.from('media').delete().eq('id', deleteTarget.id);
+      if (error) {
+        setError(`The image file was deleted, but its media library record could not be removed: ${error.message}`);
+        return;
+      }
+
+      setDeleteTarget(null);
+      await fetchMedia();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Could not delete this media file.');
+    }
   };
 
-  const copyUrl = (url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopied(url);
-    setTimeout(() => setCopied(null), 2000);
+  const copyUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(url);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      setError('Could not copy the image URL. Check browser clipboard permissions.');
+    }
   };
 
   return (
@@ -86,13 +126,16 @@ export function AdminMediaPage() {
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
           multiple
           onChange={handleUpload}
           className="hidden"
           disabled={uploading}
         />
       </div>
+
+      {error && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
+      {notice && <div role="status" className="mb-4 p-3 rounded-lg bg-palm-50 border border-palm-200 text-palm-700 text-sm">{notice}</div>}
 
       {loading ? (
         <LoadingSpinner label="Loading media..." />

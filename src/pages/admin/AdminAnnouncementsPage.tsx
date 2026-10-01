@@ -22,12 +22,19 @@ export function AdminAnnouncementsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [operationError, setOperationError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Announcement | null>(null);
 
   const fetchAnnouncements = async () => {
-    const { data } = await supabase.from('announcements').select('*').order('sort_order', { ascending: true });
-    if (data) setAnnouncements(data as Announcement[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('announcements').select('*').order('sort_order', { ascending: true });
+      if (error) setOperationError(error.message);
+      else setAnnouncements(data as Announcement[]);
+    } catch (fetchError) {
+      setOperationError(fetchError instanceof Error ? fetchError.message : 'Could not load announcements.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchAnnouncements(); }, []);
@@ -65,29 +72,43 @@ export function AdminAnnouncementsPage() {
       sort_order: form.sort_order,
     };
 
-    if (editing) {
-      const { error } = await supabase.from('announcements').update(payload).eq('id', editing.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('announcements').insert(payload);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      const result = editing
+        ? await supabase.from('announcements').update(payload).eq('id', editing.id)
+        : await supabase.from('announcements').insert(payload);
+      if (result.error) { setError(result.error.message); return; }
 
-    setSaving(false);
-    setModalOpen(false);
-    fetchAnnouncements();
+      setModalOpen(false);
+      await fetchAnnouncements();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save this announcement.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await supabase.from('announcements').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    fetchAnnouncements();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('announcements').delete().eq('id', deleteTarget.id);
+      if (error) { setOperationError(error.message); return; }
+      setDeleteTarget(null);
+      await fetchAnnouncements();
+    } catch (deleteError) {
+      setOperationError(deleteError instanceof Error ? deleteError.message : 'Could not delete this announcement.');
+    }
   };
 
   const togglePublish = async (a: Announcement) => {
-    await supabase.from('announcements').update({ is_published: !a.is_published }).eq('id', a.id);
-    fetchAnnouncements();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('announcements').update({ is_published: !a.is_published }).eq('id', a.id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchAnnouncements();
+    } catch (toggleError) {
+      setOperationError(toggleError instanceof Error ? toggleError.message : 'Could not update this announcement.');
+    }
   };
 
   return (
@@ -97,6 +118,8 @@ export function AdminAnnouncementsPage() {
           <Plus size={18} /> Add Announcement
         </button>
       </div>
+
+      {operationError && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{operationError}</div>}
 
       {loading ? (
         <LoadingSpinner label="Loading announcements..." />

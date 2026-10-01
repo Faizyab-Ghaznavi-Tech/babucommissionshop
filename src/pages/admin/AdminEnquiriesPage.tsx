@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Mail, MailOpen, Archive, Trash2, Phone, X, MessageSquare } from 'lucide-react';
+import { Search, Mail, MailOpen, Archive, Trash2, Phone, MessageSquare } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { Modal, ConfirmDialog } from '@/components/admin/Dialogs';
 import { LoadingSpinner, EmptyState } from '@/components/States';
@@ -14,17 +14,24 @@ export function AdminEnquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [operationError, setOperationError] = useState('');
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ContactMessage | null>(null);
 
   const fetchMessages = async () => {
-    const { data } = await supabase
-      .from('contact_messages')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) setMessages(data as ContactMessage[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) setOperationError(error.message);
+      else setMessages(data as ContactMessage[]);
+    } catch (fetchError) {
+      setOperationError(fetchError instanceof Error ? fetchError.message : 'Could not load enquiries.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchMessages(); }, []);
@@ -63,22 +70,40 @@ export function AdminEnquiriesPage() {
   };
 
   const markRead = async (id: string, read: boolean) => {
-    await supabase.from('contact_messages').update({ is_read: read }).eq('id', id);
-    fetchMessages();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('contact_messages').update({ is_read: read }).eq('id', id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchMessages();
+    } catch (updateError) {
+      setOperationError(updateError instanceof Error ? updateError.message : 'Could not update this enquiry.');
+    }
   };
 
   const toggleArchive = async (msg: ContactMessage) => {
-    await supabase.from('contact_messages').update({ is_archived: !msg.is_archived }).eq('id', msg.id);
-    if (selected?.id === msg.id) setSelected({ ...msg, is_archived: !msg.is_archived });
-    fetchMessages();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('contact_messages').update({ is_archived: !msg.is_archived }).eq('id', msg.id);
+      if (error) { setOperationError(error.message); return; }
+      if (selected?.id === msg.id) setSelected({ ...msg, is_archived: !msg.is_archived });
+      await fetchMessages();
+    } catch (updateError) {
+      setOperationError(updateError instanceof Error ? updateError.message : 'Could not update this enquiry.');
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await supabase.from('contact_messages').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    if (selected?.id === deleteTarget.id) { setDetailOpen(false); setSelected(null); }
-    fetchMessages();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('contact_messages').delete().eq('id', deleteTarget.id);
+      if (error) { setOperationError(error.message); return; }
+      setDeleteTarget(null);
+      if (selected?.id === deleteTarget.id) { setDetailOpen(false); setSelected(null); }
+      await fetchMessages();
+    } catch (deleteError) {
+      setOperationError(deleteError instanceof Error ? deleteError.message : 'Could not delete this enquiry.');
+    }
   };
 
   const filterTabs: { key: FilterType; label: string; count: number }[] = [
@@ -96,6 +121,8 @@ export function AdminEnquiriesPage() {
           <input type="text" placeholder="Search enquiries..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field pl-10" />
         </div>
       </div>
+
+      {operationError && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{operationError}</div>}
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {filterTabs.map(tab => (

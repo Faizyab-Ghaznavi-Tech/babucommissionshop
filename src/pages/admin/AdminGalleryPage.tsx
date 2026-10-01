@@ -21,12 +21,19 @@ export function AdminGalleryPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [operationError, setOperationError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
 
   const fetchGallery = async () => {
-    const { data } = await supabase.from('gallery').select('*').order('sort_order', { ascending: true });
-    if (data) setItems(data as GalleryItem[]);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('gallery').select('*').order('sort_order', { ascending: true });
+      if (error) setOperationError(error.message);
+      else setItems(data as GalleryItem[]);
+    } catch (fetchError) {
+      setOperationError(fetchError instanceof Error ? fetchError.message : 'Could not load the gallery.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchGallery(); }, []);
@@ -67,29 +74,43 @@ export function AdminGalleryPage() {
       is_published: form.is_published,
     };
 
-    if (editing) {
-      const { error } = await supabase.from('gallery').update(payload).eq('id', editing.id);
-      if (error) { setError(error.message); setSaving(false); return; }
-    } else {
-      const { error } = await supabase.from('gallery').insert(payload);
-      if (error) { setError(error.message); setSaving(false); return; }
-    }
+    try {
+      const result = editing
+        ? await supabase.from('gallery').update(payload).eq('id', editing.id)
+        : await supabase.from('gallery').insert(payload);
+      if (result.error) { setError(result.error.message); return; }
 
-    setSaving(false);
-    setModalOpen(false);
-    fetchGallery();
+      setModalOpen(false);
+      await fetchGallery();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save this gallery image.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await supabase.from('gallery').delete().eq('id', deleteTarget.id);
-    setDeleteTarget(null);
-    fetchGallery();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('gallery').delete().eq('id', deleteTarget.id);
+      if (error) { setOperationError(error.message); return; }
+      setDeleteTarget(null);
+      await fetchGallery();
+    } catch (deleteError) {
+      setOperationError(deleteError instanceof Error ? deleteError.message : 'Could not delete this gallery image.');
+    }
   };
 
   const togglePublish = async (g: GalleryItem) => {
-    await supabase.from('gallery').update({ is_published: !g.is_published }).eq('id', g.id);
-    fetchGallery();
+    setOperationError('');
+    try {
+      const { error } = await supabase.from('gallery').update({ is_published: !g.is_published }).eq('id', g.id);
+      if (error) { setOperationError(error.message); return; }
+      await fetchGallery();
+    } catch (toggleError) {
+      setOperationError(toggleError instanceof Error ? toggleError.message : 'Could not update this gallery image.');
+    }
   };
 
   return (
@@ -103,6 +124,8 @@ export function AdminGalleryPage() {
           <Plus size={18} /> Add Image
         </button>
       </div>
+
+      {operationError && <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{operationError}</div>}
 
       {loading ? (
         <LoadingSpinner label="Loading gallery..." />
