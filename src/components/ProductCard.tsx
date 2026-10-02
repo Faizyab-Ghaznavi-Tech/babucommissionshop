@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '@/types/database';
 import { MediaImage } from './MediaImage';
@@ -19,12 +20,37 @@ function WhatsAppIcon() {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { settings } = useWebsiteSettings();
+  const cardRef = useRef<HTMLElement>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
   const quoteHref = `/contact?product=${encodeURIComponent(product.slug)}`;
   const whatsappMessage = `Hello Babu Commission Shop, I am interested in ${product.name}. Please share the current price, quality options and bulk availability.`;
   const whatsappHref = getShopWhatsAppUrl(settings?.whatsapp, whatsappMessage);
 
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+      setIsRevealed(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsRevealed(true);
+        observer.unobserve(card);
+      }
+    }, { rootMargin: '0px 0px -32px 0px', threshold: 0.08 });
+
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <article className="relative flex h-full w-full min-w-0 flex-col pt-10 sm:pt-12">
+    <article
+      ref={cardRef}
+      className={`group relative flex h-full w-full min-w-0 flex-col pt-10 transition-transform duration-500 ease-out sm:pt-12 ${isRevealed ? 'translate-y-0' : 'translate-y-3'} hover:-translate-y-1 motion-reduce:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none`}
+    >
       <Link
         to={`/dates/${product.slug}`}
         aria-label={`View ${product.name}`}
@@ -39,7 +65,7 @@ export function ProductCard({ product }: ProductCardProps) {
         />
       </Link>
 
-      <div className="relative flex flex-1 flex-col rounded-[24px] border border-date-200/60 bg-[#fffdfa] px-4 pb-5 pt-[8.25rem] shadow-[0_18px_40px_-30px_rgba(48,31,20,0.28),0_5px_12px_-8px_rgba(48,31,20,0.12)] sm:px-5 sm:pb-6 sm:pt-[9rem] lg:px-6 lg:pt-[9.5rem]">
+      <div className="relative flex flex-1 flex-col rounded-[24px] border border-date-200/60 bg-[#fffdfa] px-4 pb-5 pt-[8.25rem] shadow-[0_18px_40px_-30px_rgba(48,31,20,0.28),0_5px_12px_-8px_rgba(48,31,20,0.12)] transition-shadow duration-300 ease-out group-hover:shadow-[0_22px_44px_-30px_rgba(48,31,20,0.32),0_7px_16px_-8px_rgba(48,31,20,0.16)] sm:px-5 sm:pb-6 sm:pt-[9rem] lg:px-6 lg:pt-[9.5rem]">
         <div className="mb-2 min-h-5 truncate text-xs font-semibold tracking-[0.06em] text-sand-700">
           {product.category || <span aria-hidden="true">&nbsp;</span>}
         </div>

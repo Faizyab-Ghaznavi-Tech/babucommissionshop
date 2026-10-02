@@ -8,7 +8,10 @@ import {
   MessageCircle,
   Package,
   Sprout,
+  TreePalm,
+  Handshake,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EnquiryForm } from '@/components/EnquiryForm';
 import { HomepageHero } from '@/components/HomepageHero';
@@ -25,6 +28,29 @@ const processSteps = [
   { Icon: MessageCircle, title: 'Discuss', text: 'Ask about current availability and options.' },
   { Icon: BadgeCheck, title: 'Confirm terms', text: 'Agree on grade, price, and arrangements.' },
   { Icon: Package, title: 'Proceed', text: 'Move ahead once the details are clear.' },
+];
+
+const whyFeatures = [
+  {
+    Icon: TreePalm,
+    title: 'Khairpur Origin',
+    text: "Sourced from one of Pakistan's renowned date-producing regions.",
+  },
+  {
+    Icon: Boxes,
+    title: 'Wholesale Supply',
+    text: 'Solutions for retailers, wholesalers, traders and distributors.',
+  },
+  {
+    Icon: BadgeCheck,
+    title: 'Carefully Selected',
+    text: 'Quality-focused sourcing and sorting.',
+  },
+  {
+    Icon: Handshake,
+    title: 'Reliable Dealing',
+    text: 'Straightforward communication and dependable service.',
+  },
 ];
 
 const faqs = [
@@ -47,6 +73,36 @@ const faqs = [
 ];
 
 export function HomePage() {
+  const whySectionRef = useRef<HTMLElement>(null);
+  const [whySectionVisible, setWhySectionVisible] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setPrefersReducedMotion(reduceMotion);
+
+    if (reduceMotion) {
+      setWhySectionVisible(true);
+      return;
+    }
+
+    const section = whySectionRef.current;
+    if (!section || !('IntersectionObserver' in window)) {
+      setWhySectionVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setWhySectionVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.15, rootMargin: '0px 0px -48px 0px' });
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   const { products, loading: productsLoading, error: productsError } = useProducts();
   const { services } = useServices();
   const { about: rawAbout } = useAboutContent();
@@ -94,31 +150,35 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="relative isolate overflow-hidden bg-palm-600 text-white">
-        <MediaImage alt="Date palm grove" className="absolute inset-0 z-0 h-full w-full object-cover opacity-30" fallbackLabel={false} stockPhotoVariant="grove" />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-r from-palm-950/95 via-palm-800/90 to-palm-700/85" />
-        <div className="container-prose relative z-20 grid gap-9 py-12 sm:py-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-14 lg:py-16">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-sand-300">Why Babu Commission Shop?</p>
-            <h2 className="mt-3 max-w-lg font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">A Khairpur starting point for your date enquiry.</h2>
+      <section ref={whySectionRef} id="why-babu" className="relative isolate overflow-hidden bg-palm-600 text-white">
+        <MediaImage alt="Date palms growing in the Khairpur region" className="absolute inset-0 z-0 h-full w-full object-cover object-[center_28%] opacity-40 brightness-75 saturate-75" fallbackLabel={false} stockPhotoVariant="grove" />
+        <div aria-hidden="true" className="absolute inset-0 z-10 bg-palm-950/70" />
+        <div className="container-prose relative z-20 grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-9 py-12 sm:py-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,2.1fr)] lg:items-center lg:gap-10 lg:py-16">
+          <div className={`min-w-0 max-w-xl transition-[opacity,transform] duration-[650ms] ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#DCBD84]">WHY BABU COMMISSION SHOP?</p>
+            <h2 className="mt-3 max-w-lg font-display text-[1.7rem] font-semibold leading-tight text-white sm:text-4xl lg:text-[2.1rem] xl:text-[2.35rem]">
+              <span className="block">Your Trusted Partner</span>
+              <span className="block">for Khairpur Dates</span>
+            </h2>
             <p className="mt-4 max-w-lg text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
-              Browse the catalog, share what you need, and discuss the details with the shop before making a decision.
+              We are committed to providing quality dates and reliable business dealing for our valued customers.
             </p>
           </div>
-          <div className="grid gap-x-6 gap-y-7 sm:grid-cols-2">
-            {[
-              { Icon: MapPin, title: 'Khairpur focus', text: 'Explore date varieties associated with the Khairpur region.' },
-              { Icon: Boxes, title: 'Wholesale enquiries', text: 'Share quantities and requirements for a business order.' },
-              { Icon: MessageCircle, title: 'Direct discussion', text: 'Ask the shop about availability, grade, and arrangements.' },
-              { Icon: Check, title: 'Clear next steps', text: 'Confirm the order details before moving ahead.' },
-            ].map(({ Icon, title, text }) => (
-              <div key={title} className="flex gap-3 border-t border-white/20 pt-4">
-                <Icon size={21} className="mt-0.5 shrink-0 text-sand-400" aria-hidden="true" />
-                <div>
-                  <h3 className="font-display text-lg font-semibold text-white">{title}</h3>
-                  <p className="mt-1 text-sm leading-5 text-white/75">{text}</p>
+          <div className="grid min-w-0 gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-0">
+            {whyFeatures.map(({ Icon, title, text }, index) => (
+              <article
+                key={title}
+                className={`group min-w-0 flex items-start gap-4 border-t border-white/15 pt-5 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 lg:min-h-36 lg:flex-col lg:items-center lg:border-l lg:border-t-0 lg:border-white/20 lg:pl-5 lg:pt-0 lg:text-center lg:first:border-l-0 lg:first:pl-0 xl:pl-6 xl:first:pl-0 transition-[opacity,transform] duration-[600ms] ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}
+                style={{ transitionDelay: whySectionVisible && !prefersReducedMotion ? `${index * 100}ms` : '0ms' }}
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center text-[#DCBD84] transition-colors duration-200 group-hover:text-[#F0D49A] lg:h-9 lg:w-9">
+                  <Icon size={32} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div className="min-w-0 lg:flex-1">
+                  <h3 className="font-display text-base font-semibold text-white/90 transition-colors duration-200 group-hover:text-white sm:text-lg">{title}</h3>
+                  <p className="mt-1.5 text-sm leading-5 text-white/75 lg:text-xs lg:leading-[1.15rem] xl:text-[0.8rem]">{text}</p>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
