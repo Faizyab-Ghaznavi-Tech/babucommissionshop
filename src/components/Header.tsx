@@ -74,7 +74,7 @@ export function Header({ settings }: HeaderProps) {
       <a href="#main-content" className="sr-only z-50 rounded-xl bg-white px-4 py-3 text-date-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
         Skip to main content
       </a>
-      <div className={`mx-auto w-full max-w-[1640px] px-1.5 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 sm:px-3 lg:px-0 ${showDarkSurface ? 'rounded-2xl border border-white/15 bg-date-900/80 shadow-[0_16px_44px_rgba(17,10,6,0.3)] backdrop-blur-xl' : 'border border-transparent bg-transparent shadow-none backdrop-blur-0'}`}>
+      <div className={`mx-auto w-full max-w-[1640px] px-1.5 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 sm:px-3 lg:px-3 xl:px-5 ${showDarkSurface ? `rounded-2xl border border-white/15 ${menuOpen ? 'bg-date-900/75' : 'bg-date-900/60'} shadow-[0_16px_44px_rgba(17,10,6,0.3)] backdrop-blur-xl` : 'border border-transparent bg-transparent shadow-none backdrop-blur-0'}`}>
         <div className="relative z-10 flex min-h-[4.15rem] items-center justify-between gap-2 md:min-h-[4.5rem]">
           <Link to="/" aria-label={`${settings?.business_name || 'Babu Commission Shop'} home`} onClick={closeMenu} className="shrink-0 rounded-xl">
             <Brand businessName={settings?.business_name || 'Babu Commission Shop'} logoUrl={settings?.logo_url} light navbar />
@@ -93,15 +93,15 @@ export function Header({ settings }: HeaderProps) {
             })}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-2.5 lg:flex">
-            <Link to="/#wholesale" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-sand-200 px-4 text-[0.82rem] font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition-colors duration-200 hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-date-950 xl:px-5 xl:text-sm">
+          <div className="hidden shrink-0 items-center gap-3 lg:flex">
+            <Link to="/#wholesale" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#D89D40] px-4 text-[0.82rem] font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors duration-200 hover:bg-[#E7AE54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D89D40] focus-visible:ring-offset-2 focus-visible:ring-offset-date-950 xl:px-5 xl:text-sm">
               Get a Quote <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
             {whatsappAction('inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-emerald-50/70 bg-emerald-100/80 px-4 text-[0.82rem] font-semibold text-emerald-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] backdrop-blur-sm transition-colors duration-200 hover:border-emerald-50 hover:bg-emerald-50/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-date-950 xl:px-5 xl:text-sm')}
           </div>
 
           <div className="flex shrink-0 items-center gap-2 lg:hidden">
-            <Link to="/#wholesale" onClick={closeMenu} className="inline-flex min-h-10 items-center justify-center rounded-full bg-sand-200 px-3 text-[0.74rem] font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition-colors duration-200 hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand-300 sm:px-3.5 sm:text-sm">
+            <Link to="/#wholesale" onClick={closeMenu} className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#D89D40] px-3 text-[0.74rem] font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors duration-200 hover:bg-[#E7AE54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D89D40] sm:px-3.5 sm:text-sm">
               <span className="sm:hidden">Quote</span>
               <span className="hidden sm:inline">Get a Quote</span>
             </Link>
@@ -131,7 +131,7 @@ export function Header({ settings }: HeaderProps) {
                 );
               })}
               <div className="mt-2 grid gap-2 border-t border-white/10 pt-3 sm:grid-cols-2">
-                <Link to="/#wholesale" onClick={closeMenu} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-sand-200 px-4 text-sm font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition-colors duration-200 hover:bg-sand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand-300">
+                <Link to="/#wholesale" onClick={closeMenu} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#D89D40] px-4 text-sm font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors duration-200 hover:bg-[#E7AE54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D89D40]">
                   Get a Quote <ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
                 {whatsappAction('inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-emerald-50/70 bg-emerald-100/80 px-4 text-sm font-semibold text-emerald-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] backdrop-blur-sm transition-colors duration-200 hover:border-emerald-50 hover:bg-emerald-50/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200')}

@@ -38,7 +38,7 @@ export function DatesPage() {
               ? <EmptyState title="Date varieties are being prepared" message="New listings will appear here when they are published by the shop." />
               : <EmptyState title="No varieties found" message="Try adjusting your search or category filter." icon={<Search size={48} />} />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {filtered.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}

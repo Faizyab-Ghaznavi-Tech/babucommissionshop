@@ -56,25 +56,23 @@ export function HomePage() {
 
   const featuredProducts = products.filter((product) => product.featured);
   const displayProducts = [...featuredProducts, ...products.filter((product) => !product.featured)].slice(0, 5);
-  const heroImage = settings?.hero_image_url
-    || featuredProducts.find((product) => product.image_url)?.image_url
-    || about?.image_1_url;
+  const heroImage = settings?.hero_image_url || undefined;
   const aboutCopy = about?.business_description || about?.company_story || settings?.description
     || 'Babu Commission Shop helps buyers start a conversation about Khairpur date varieties, quantities, and sourcing requirements.';
 
   return (
     <PublicLayout
       description={settings?.meta_description || 'Explore Khairpur date varieties and send Babu Commission Shop a wholesale enquiry.'}
-      image={heroImage || undefined}
+      image={heroImage}
     >
-      <HomepageHero image={heroImage || undefined} />
+      <HomepageHero image={heroImage} whatsappNumber={settings?.whatsapp} />
 
       <section className="section-padding bg-cream">
         <div className="container-prose">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
             <div className="max-w-2xl">
-              <p className="eyebrow">Our products</p>
-              <h2 className="mt-2 font-display text-3xl font-semibold text-date-950 sm:text-4xl">Selected Dates from Khairpur</h2>
+              <h2 className="font-display text-4xl font-semibold leading-[1.02] tracking-[-0.025em] text-[#DCBD84] sm:text-5xl lg:text-[3.5rem]">Our Products</h2>
+              <p className="mt-3 font-display text-xl font-semibold text-date-950 sm:text-2xl">Selected Dates from Khairpur</p>
               <p className="mt-3 max-w-xl text-sm leading-6 text-date-700 sm:text-base">
                 Explore our selection of Khairpur dates, available for wholesale supply and bulk enquiries.
               </p>
@@ -89,7 +87,7 @@ export function HomePage() {
           ) : displayProducts.length === 0 ? (
             <EmptyState title="Date varieties are being prepared" message="New listings will appear here when they are published by the shop." />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {displayProducts.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}

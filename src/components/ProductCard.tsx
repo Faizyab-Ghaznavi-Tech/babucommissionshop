@@ -1,4 +1,3 @@
-import { ArrowRight, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Product } from '@/types/database';
 import { MediaImage } from './MediaImage';
@@ -9,52 +8,56 @@ interface ProductCardProps {
   product: Product;
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+      <path d="M20.25 11.7a8.25 8.25 0 0 1-12.2 7.23L4 20l1.12-3.92A8.25 8.25 0 1 1 20.25 11.7Z" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.6 8.08c.18-.39.4-.4.62-.4h.4c.18 0 .32.04.45.31l.59 1.38c.1.23.08.4-.06.58l-.44.52c-.14.16-.26.29-.1.58.17.3.78 1.3 1.77 1.8.77.4 1.03.42 1.38.25.18-.09.57-.68.73-.9.14-.2.3-.18.51-.1l1.18.55c.23.1.37.16.42.27.05.11.04.66-.22 1.15-.26.48-1.08.94-1.45 1-.37.08-.86.1-1.42-.07-.32-.1-.73-.24-1.27-.48-2.2-.97-3.63-3.19-3.74-3.35-.11-.15-.9-1.2-.9-2.28 0-1.07.56-1.58.77-1.8Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const { settings } = useWebsiteSettings();
   const quoteHref = `/contact?product=${encodeURIComponent(product.slug)}`;
-  const whatsappMessage = `Hi, I'm interested in ${product.name}. Please share current availability and wholesale details.`;
+  const whatsappMessage = `Hello Babu Commission Shop, I am interested in ${product.name}. Please share the current price, quality options and bulk availability.`;
   const whatsappHref = getShopWhatsAppUrl(settings?.whatsapp, whatsappMessage);
 
   return (
-    <article className="group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-xl border border-white/80 bg-white/80 shadow-[0_8px_28px_rgba(66,39,23,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm transition-[border-color,box-shadow] duration-200 hover:border-date-300/80 hover:shadow-[0_12px_32px_rgba(66,39,23,0.12),inset_0_1px_0_rgba(255,255,255,0.95)]">
-      <div className="relative aspect-[4/3] overflow-hidden bg-date-100">
-        <Link
-          to={`/dates/${product.slug}`}
-          aria-label={`View ${product.name}`}
-          className="absolute inset-0 z-0 rounded-t-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-date-800"
-        >
-          <MediaImage
-            src={product.image_url || undefined}
-            alt={product.image_url ? product.name : `${product.name} — representative stock photo`}
-            className="h-full w-full object-cover transition-transform duration-[220ms] ease-out group-hover:scale-[1.03]"
-            fallbackLabel={false}
-            stockPhotoVariant={product.slug}
-          />
-        </Link>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1/3 bg-gradient-to-t from-date-950/20 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-        {product.category && (
-          <span className="pointer-events-none absolute bottom-3 left-3 z-[2] rounded-md bg-date-950/85 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-white">
-            {product.category}
-          </span>
-        )}
-      </div>
+    <article className="relative flex h-full w-full min-w-0 flex-col pt-10 sm:pt-12">
+      <Link
+        to={`/dates/${product.slug}`}
+        aria-label={`View ${product.name}`}
+        className="absolute inset-x-3 top-0 z-20 mx-auto block h-40 max-w-[14rem] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-date-800 focus-visible:ring-offset-4 sm:h-48 sm:max-w-[16rem]"
+      >
+        <MediaImage
+          src={product.image_url || undefined}
+          alt={product.image_url ? product.name : `${product.name} - representative stock photo`}
+          className="h-full w-full rounded-lg object-cover drop-shadow-[0_16px_18px_rgba(43,29,19,0.2)]"
+          fallbackLabel={false}
+          stockPhotoVariant={product.slug}
+        />
+      </Link>
 
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="font-display text-lg font-semibold leading-snug text-date-950">
+      <div className="relative flex flex-1 flex-col rounded-[24px] border border-date-200/60 bg-[#fffdfa] px-4 pb-5 pt-[8.25rem] shadow-[0_18px_40px_-30px_rgba(48,31,20,0.28),0_5px_12px_-8px_rgba(48,31,20,0.12)] sm:px-5 sm:pb-6 sm:pt-[9rem] lg:px-6 lg:pt-[9.5rem]">
+        <div className="mb-2 min-h-5 truncate text-xs font-semibold tracking-[0.06em] text-sand-700">
+          {product.category || <span aria-hidden="true">&nbsp;</span>}
+        </div>
+
+        <h3 className="min-h-[1.75rem] line-clamp-2 text-left font-display text-lg font-semibold leading-snug text-date-950 sm:text-xl">
           <Link to={`/dates/${product.slug}`} className="transition-colors hover:text-sand-700 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-date-700">
             {product.name}
           </Link>
         </h3>
-        <p className="mt-2 line-clamp-3 flex-1 text-xs leading-5 text-date-600">{product.description}</p>
+        <p className="mt-2 min-h-[3rem] text-left text-sm leading-6 text-date-600 line-clamp-2">{product.description}</p>
 
-        <div className="mt-4 flex items-center gap-2 border-t border-date-100 pt-3">
+        <div className="mt-auto flex items-center gap-2 pt-6">
           <Link
             to={quoteHref}
             aria-label={`Get a quote for ${product.name}`}
-            className="group/quote inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-sand-300/70 bg-sand-100/80 px-2.5 text-xs font-semibold text-date-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-200 hover:border-sand-400 hover:bg-sand-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand-600 focus-visible:ring-offset-2"
+            className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-xl bg-date-900 px-1.5 text-xs font-semibold text-cream transition-colors duration-200 hover:bg-date-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sand-600 focus-visible:ring-offset-2 xl:px-3 xl:text-sm"
           >
             Get a Quote
-            <ArrowRight size={14} aria-hidden="true" className="transition-transform duration-200 group-hover/quote:translate-x-0.5" />
           </Link>
           {whatsappHref && (
             <a
@@ -62,10 +65,10 @@ export function ProductCard({ product }: ProductCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Ask about ${product.name} on WhatsApp (opens in a new tab)`}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-palm-800/15 bg-palm-50/75 px-2.5 text-xs font-medium text-palm-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-sm transition-colors duration-200 hover:bg-palm-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-palm-700 focus-visible:ring-offset-2"
+              title={`Ask about ${product.name} on WhatsApp`}
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-palm-700/15 bg-palm-50 text-palm-800 transition-colors duration-200 hover:bg-palm-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-palm-700 focus-visible:ring-offset-2"
             >
-              <MessageCircle size={15} aria-hidden="true" />
-              WhatsApp
+              <WhatsAppIcon />
             </a>
           )}
         </div>
