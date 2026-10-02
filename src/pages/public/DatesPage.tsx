@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
 import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
-import { MediaImage } from '@/components/MediaImage';
+import { ProductCard } from '@/components/ProductCard';
 import { useProducts } from '@/hooks/useData';
 
 export function DatesPage() {
@@ -40,17 +39,7 @@ export function DatesPage() {
               : <EmptyState title="No varieties found" message="Try adjusting your search or category filter." icon={<Search size={48} />} />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((product) => {
-                return <Link key={product.id} to={`/dates/${product.slug}`} className="card group overflow-hidden">
-                  <div className="aspect-[4/3] overflow-hidden bg-date-100"><MediaImage src={product.image_url || undefined} alt={product.image_url ? product.name : `${product.name} — representative stock photo`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" fallbackLabel={false} stockPhotoVariant={product.slug} /></div>
-                  <div className="p-5">
-                    {product.category && <p className="eyebrow">{product.category}</p>}
-                    <h2 className="mt-2 font-display text-xl font-semibold text-date-950 group-hover:text-date-700">{product.name}</h2>
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-date-700">{product.description}</p>
-                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-date-900">View details <ArrowRight size={15} aria-hidden="true" /></span>
-                  </div>
-                </Link>;
-              })}
+              {filtered.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}
         </div>

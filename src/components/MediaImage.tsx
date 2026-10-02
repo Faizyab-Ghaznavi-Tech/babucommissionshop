@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getStockPhoto } from '@/lib/stockPhotos';
 
 interface MediaImageProps {
@@ -14,6 +14,9 @@ interface MediaImageProps {
 export function MediaImage({ src, alt, className = '', loading = 'lazy', fetchPriority, fallbackLabel = 'Shop image coming soon', stockPhotoVariant }: MediaImageProps) {
   const [failed, setFailed] = useState(!src);
   const [stockPhotoFailed, setStockPhotoFailed] = useState(false);
+  const setFetchPriority = useCallback((image: HTMLImageElement | null) => {
+    if (image && fetchPriority) image.setAttribute('fetchpriority', fetchPriority);
+  }, [fetchPriority]);
   const classNames = className.split(/\s+/).filter(Boolean);
   const positionClass = classNames.includes('absolute') ? 'absolute' : classNames.includes('fixed') ? 'fixed' : 'relative';
   const imageClassName = classNames.filter((className) => !['absolute', 'relative', 'fixed', 'static', 'sticky'].includes(className)).join(' ');
@@ -29,8 +32,8 @@ export function MediaImage({ src, alt, className = '', loading = 'lazy', fetchPr
         <img
           src={getStockPhoto(stockPhotoVariant)}
           alt={alt ? `${alt} (representative stock photo)` : ''}
+          ref={setFetchPriority}
           loading={loading}
-          fetchPriority={fetchPriority}
           onError={() => setStockPhotoFailed(true)}
           className={`${imageClassName} ${positionClass}`}
         />
@@ -53,8 +56,8 @@ export function MediaImage({ src, alt, className = '', loading = 'lazy', fetchPr
     <img
       src={src}
       alt={alt}
+      ref={setFetchPriority}
       loading={loading}
-      fetchPriority={fetchPriority}
       onError={() => setFailed(true)}
       className={`${imageClassName} ${positionClass}`}
     />

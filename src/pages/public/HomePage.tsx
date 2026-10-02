@@ -11,11 +11,12 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EnquiryForm } from '@/components/EnquiryForm';
+import { HomepageHero } from '@/components/HomepageHero';
 import { MediaImage } from '@/components/MediaImage';
+import { ProductCard } from '@/components/ProductCard';
 import { PublicLayout } from '@/components/PublicLayout';
 import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
 import { useAboutContent, useProducts, useServices, useWebsiteSettings } from '@/hooks/useData';
-import { getWhatsAppUrl } from '@/lib/contact';
 import { sanitizeAboutContent, sanitizePublicSettings } from '@/lib/siteContent';
 
 const processSteps = [
@@ -60,68 +61,22 @@ export function HomePage() {
     || about?.image_1_url;
   const aboutCopy = about?.business_description || about?.company_story || settings?.description
     || 'Babu Commission Shop helps buyers start a conversation about Khairpur date varieties, quantities, and sourcing requirements.';
-  const whatsappUrl = getWhatsAppUrl(settings?.whatsapp);
 
   return (
     <PublicLayout
       description={settings?.meta_description || 'Explore Khairpur date varieties and send Babu Commission Shop a wholesale enquiry.'}
       image={heroImage || undefined}
     >
-      <section className="relative isolate min-h-[34rem] overflow-hidden bg-date-950 sm:min-h-[37rem] lg:min-h-[35rem]">
-        <MediaImage
-          src={heroImage}
-          alt="Khairpur date varieties"
-          loading="eager"
-          fetchPriority="high"
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-          fallbackLabel={false}
-          stockPhotoVariant="hero"
-        />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-r from-date-950/95 via-date-950/75 to-date-950/20" />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-t from-date-950/70 via-transparent to-date-950/10" />
-
-        <div className="container-prose relative z-20 flex min-h-[34rem] flex-col justify-center py-12 sm:min-h-[37rem] lg:min-h-[35rem]">
-          <div className="max-w-3xl text-white">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-sand-300">Khairpur dates · Wholesale enquiries</p>
-            <h1 className="mt-5 max-w-[49rem] font-display text-[2rem] font-semibold leading-[1.1] text-white sm:text-5xl lg:text-[3.4rem] xl:text-[3.75rem]">
-              Authentic Khairpur Dates,<br />
-              <span className="text-sand-400"> Direct From the Source</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/85 sm:text-lg sm:leading-8">
-              Explore date varieties and tell us what you need. Contact the shop to confirm current availability, grade, quantity, and terms.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link to="/#wholesale" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-sand-500 px-5 py-3 text-sm font-bold text-date-950 transition-colors hover:bg-sand-400">
-                Request Wholesale Quote <ArrowRight size={17} aria-hidden="true" />
-              </Link>
-              {whatsappUrl ? (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm border border-white/70 bg-date-950/20 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10">
-                  <MessageCircle size={17} aria-hidden="true" /> WhatsApp Us
-                </a>
-              ) : (
-                <Link to="/contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm border border-white/70 bg-date-950/20 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10">
-                  Contact the Shop <ArrowRight size={17} aria-hidden="true" />
-                </Link>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/20 pt-5 text-xs font-medium text-white/90 sm:mt-12 sm:gap-x-9 sm:text-sm">
-            <span className="inline-flex items-center gap-2"><MapPin size={16} className="text-sand-400" aria-hidden="true" /> Khairpur, Sindh, Pakistan</span>
-            <span className="inline-flex items-center gap-2"><Package size={16} className="text-sand-400" aria-hidden="true" /> Wholesale enquiries</span>
-            <span className="inline-flex items-center gap-2"><MessageCircle size={16} className="text-sand-400" aria-hidden="true" /> Discuss directly with the shop</span>
-          </div>
-        </div>
-      </section>
+      <HomepageHero image={heroImage || undefined} />
 
       <section className="section-padding bg-cream">
         <div className="container-prose">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
             <div className="max-w-2xl">
               <p className="eyebrow">Our products</p>
-              <h2 className="mt-2 font-display text-3xl font-semibold text-date-950 sm:text-4xl">Khairpur Date Varieties</h2>
+              <h2 className="mt-2 font-display text-3xl font-semibold text-date-950 sm:text-4xl">Selected Dates from Khairpur</h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-date-700 sm:text-base">
-                Browse the varieties listed by the shop. Ask us to confirm what is currently available for your order.
+                Explore our selection of Khairpur dates, available for wholesale supply and bulk enquiries.
               </p>
             </div>
             <Link to="/dates" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-date-700 transition-colors hover:text-sand-700">
@@ -135,25 +90,7 @@ export function HomePage() {
             <EmptyState title="Date varieties are being prepared" message="New listings will appear here when they are published by the shop." />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {displayProducts.map((product) => {
-                return (
-                  <article key={product.id} className="group flex h-full flex-col overflow-hidden border border-date-200/80 bg-white shadow-sm transition-shadow hover:shadow-md">
-                    <Link to={`/dates/${product.slug}`} aria-label={`View ${product.name}`} className="relative block aspect-[4/3] overflow-hidden bg-date-100">
-                      <MediaImage src={product.image_url || undefined} alt={product.image_url ? product.name : `${product.name} — representative stock photo`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" fallbackLabel={false} stockPhotoVariant={product.slug} />
-                      {product.category && <span className="absolute bottom-3 left-3 bg-date-950/85 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-white">{product.category}</span>}
-                    </Link>
-                    <div className="flex flex-1 flex-col p-4 sm:p-4">
-                      <h3 className="font-display text-lg font-semibold leading-snug text-date-950">
-                        <Link to={`/dates/${product.slug}`} className="transition-colors hover:text-sand-700">{product.name}</Link>
-                      </h3>
-                      <p className="mt-2 line-clamp-3 flex-1 text-xs leading-5 text-date-600">{product.description}</p>
-                      <Link to={`/contact?product=${encodeURIComponent(product.slug)}`} className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 bg-date-700 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-date-600">
-                        Request a Quote <ArrowRight size={14} aria-hidden="true" />
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
+              {displayProducts.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import { ArrowRight, ArrowLeft, Tag } from 'lucide-react';
 import { PublicLayout } from '@/components/PublicLayout';
 import { LoadingSpinner, ErrorState } from '@/components/States';
 import { MediaImage } from '@/components/MediaImage';
+import { ProductCard } from '@/components/ProductCard';
 import { useProduct, useProducts } from '@/hooks/useData';
 
 export function ProductDetailPage() {
@@ -102,28 +103,7 @@ export function ProductDetailPage() {
           <div className="container-prose">
             <h2 className="text-2xl font-display font-bold text-date-800 mb-6">Other Date Varieties</h2>
             <div className="grid sm:grid-cols-3 gap-6">
-              {otherProducts.map((p) => (
-                <Link
-                  key={p.id}
-                  to={`/dates/${p.slug}`}
-                  className="card overflow-hidden group"
-                >
-                  <div className="aspect-[4/3] overflow-hidden bg-date-100">
-                    <MediaImage
-                      src={p.image_url || undefined}
-                      alt={p.image_url ? p.name : `${p.name} — illustrative scene`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      fallbackLabel={false}
-                      stockPhotoVariant={p.slug}
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-display font-semibold text-date-800 group-hover:text-date-600 transition-colors">
-                      {p.name}
-                    </h3>
-                  </div>
-                </Link>
-              ))}
+              {otherProducts.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           </div>
         </section>

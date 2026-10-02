@@ -37,7 +37,7 @@ export function PublicLayout({ children, title, description, image }: PublicLayo
       <SEO title={fullTitle} description={description ?? settings?.meta_description} image={image} favicon={settings?.favicon_url} businessName={settings?.business_name} />
       <div className="min-h-screen flex flex-col bg-cream">
         <Header settings={settings} />
-        <main id="main-content" tabIndex={-1} className="flex-1">{children}</main>
+        <main id="main-content" tabIndex={-1} className={`flex-1 ${location.pathname === '/' ? '' : 'pt-[5.5rem] sm:pt-28'}`}>{children}</main>
         <Footer settings={settings} />
         <WhatsAppAction number={settings?.whatsapp} floating />
       </div>

@@ -7,6 +7,7 @@ import { WebsiteSettingsProvider } from '@/hooks/useData';
 
 // Public pages
 import { HomePage } from '@/pages/public/HomePage';
+import { AnnouncementsPage } from '@/pages/public/AnnouncementsPage';
 import { AboutPage } from '@/pages/public/AboutPage';
 import { DatesPage } from '@/pages/public/DatesPage';
 import { ProductDetailPage } from '@/pages/public/ProductDetailPage';
@@ -50,6 +51,7 @@ function AppRoutes() {
     <Routes>
       {/* Public */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/announcements" element={<AnnouncementsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/dates" element={<DatesPage />} />
       <Route path="/dates/:slug" element={<ProductDetailPage />} />
