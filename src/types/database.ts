@@ -5,6 +5,11 @@ export interface WebsiteSettings {
   logo_url: string;
   favicon_url: string;
   hero_image_url: string;
+  wholesale_background_url?: string;
+  dates_background_url?: string;
+  announcements_background_url?: string;
+  services_background_url?: string;
+  about_background_url?: string;
   phone: string;
   whatsapp: string;
   email: string;

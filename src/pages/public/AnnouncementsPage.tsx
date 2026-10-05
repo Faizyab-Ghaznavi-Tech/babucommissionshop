@@ -3,11 +3,12 @@ import { MediaImage } from '@/components/MediaImage';
 import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
 import { EmptyState, LoadingSpinner } from '@/components/States';
-import { useAnnouncements } from '@/hooks/useData';
+import { useAnnouncements, useWebsiteSettings } from '@/hooks/useData';
 import { formatDate } from '@/lib/storage';
 
 export function AnnouncementsPage() {
   const { announcements, loading } = useAnnouncements(true);
+  const { settings } = useWebsiteSettings();
 
   return (
     <PublicLayout
@@ -18,6 +19,7 @@ export function AnnouncementsPage() {
         title="Announcements"
         subtitle="News, updates, and notices from Babu Commission Shop."
         eyebrow="From the shop"
+        image={settings?.announcements_background_url || undefined}
       />
 
       <section className="section-padding bg-cream">

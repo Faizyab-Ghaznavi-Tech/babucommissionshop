@@ -4,10 +4,11 @@ import { PublicLayout } from '@/components/PublicLayout';
 import { PageHeader } from '@/components/SectionTitle';
 import { EmptyState, ErrorState, LoadingSpinner } from '@/components/States';
 import { ProductCard } from '@/components/ProductCard';
-import { useProducts } from '@/hooks/useData';
+import { useProducts, useWebsiteSettings } from '@/hooks/useData';
 
 export function DatesPage() {
   const { products, loading, error } = useProducts();
+  const { settings } = useWebsiteSettings();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
 
@@ -20,7 +21,7 @@ export function DatesPage() {
 
   return (
     <PublicLayout title="Date Varieties" description="Browse the date varieties listed by Babu Commission Shop and contact us to ask about availability.">
-      <PageHeader eyebrow="Our dates" title="Date varieties" subtitle="Browse the date varieties currently listed by Babu Commission Shop. Contact us to ask about availability and quantities." />
+      <PageHeader eyebrow="Our dates" title="Date varieties" subtitle="Browse the date varieties currently listed by Babu Commission Shop. Contact us to ask about availability and quantities." image={settings?.dates_background_url || undefined} />
       <section className="section-padding bg-cream">
         <div className="container-prose">
           <div className="mb-8 flex flex-col gap-4 md:flex-row">

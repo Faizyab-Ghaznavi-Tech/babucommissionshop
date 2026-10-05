@@ -154,11 +154,10 @@ export function HomePage() {
         <MediaImage alt="Date palms growing in the Khairpur region" className="absolute inset-0 z-0 h-full w-full object-cover object-[center_28%] opacity-40 brightness-75 saturate-75" fallbackLabel={false} stockPhotoVariant="grove" />
         <div aria-hidden="true" className="absolute inset-0 z-10 bg-palm-950/70" />
         <div className="container-prose relative z-20 grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-9 py-12 sm:py-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,2.1fr)] lg:items-center lg:gap-10 lg:py-16">
-          <div className={`min-w-0 max-w-xl transition-[opacity,transform] duration-[650ms] ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#DCBD84]">WHY BABU COMMISSION SHOP?</p>
-            <h2 className="mt-3 max-w-lg font-display text-[1.7rem] font-semibold leading-tight text-white sm:text-4xl lg:text-[2.1rem] xl:text-[2.35rem]">
-              <span className="block">Your Trusted Partner</span>
-              <span className="block">for Khairpur Dates</span>
+          <div className={`min-w-0 max-w-xl transition-[opacity,transform,filter] duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:blur-0 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-6 opacity-0 blur-[2px]'}`}>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#dcbd84]">WHY BABU COMMISSION SHOP?</p>
+            <h2 className="mt-3 whitespace-nowrap font-display text-[clamp(1.15rem,3.3vw,2.15rem)] font-semibold leading-tight text-[#dcbd84]">
+              Your Trusted Partner
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
               We are committed to providing quality dates and reliable business dealing for our valued customers.
@@ -168,10 +167,13 @@ export function HomePage() {
             {whyFeatures.map(({ Icon, title, text }, index) => (
               <article
                 key={title}
-                className={`group min-w-0 flex items-start gap-4 border-t border-white/15 pt-5 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 lg:min-h-36 lg:flex-col lg:items-center lg:border-l lg:border-t-0 lg:border-white/20 lg:pl-5 lg:pt-0 lg:text-center lg:first:border-l-0 lg:first:pl-0 xl:pl-6 xl:first:pl-0 transition-[opacity,transform] duration-[600ms] ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}
-                style={{ transitionDelay: whySectionVisible && !prefersReducedMotion ? `${index * 100}ms` : '0ms' }}
+                className={`group min-w-0 flex items-start gap-4 border-t border-white/15 pt-5 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0 lg:min-h-36 lg:flex-col lg:items-center lg:border-l lg:border-t-0 lg:border-white/20 lg:pl-5 lg:pt-0 lg:text-center lg:first:border-l-0 lg:first:pl-0 xl:pl-6 xl:first:pl-0 transition-[opacity,transform] duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:scale-100 motion-reduce:opacity-100 motion-reduce:transition-none ${whySectionVisible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-5 scale-[0.97] opacity-0'}`}
+                style={{ transitionDelay: whySectionVisible && !prefersReducedMotion ? `${index * 110}ms` : '0ms' }}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center text-[#DCBD84] transition-colors duration-200 group-hover:text-[#F0D49A] lg:h-9 lg:w-9">
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center text-[#dcbd84] transition-[color,transform] duration-500 ease-out group-hover:scale-110 group-hover:text-[#F0D49A] motion-reduce:scale-100 motion-reduce:transition-none lg:h-9 lg:w-9 ${whySectionVisible ? 'rotate-0 scale-100' : '-rotate-12 scale-75'}`}
+                  style={{ transitionDelay: whySectionVisible && !prefersReducedMotion ? `${index * 110 + 100}ms` : '0ms' }}
+                >
                   <Icon size={32} strokeWidth={1.6} aria-hidden="true" />
                 </span>
                 <div className="min-w-0 lg:flex-1">
@@ -184,27 +186,44 @@ export function HomePage() {
         </div>
       </section>
 
-      <section id="process" className="scroll-mt-24 section-padding bg-white">
+      <section id="process" className="scroll-mt-24 bg-[#f7f2e8] py-12 sm:py-14 lg:py-16">
         <div className="container-prose">
-          <div className="grid gap-4 md:grid-cols-[0.7fr_1.3fr] md:items-end">
-            <div>
-              <p className="eyebrow">Our process</p>
-              <h2 className="mt-2 font-display text-3xl font-semibold text-date-950 sm:text-4xl">From Khairpur to your enquiry.</h2>
+          <div className="max-w-5xl">
+            <h2 className="font-display text-3xl font-semibold leading-tight tracking-[-0.025em] text-[#dcbd84] sm:text-4xl lg:text-[2.75rem]">Our process</h2>
+            <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:items-start md:gap-6">
+              <h3 className="font-display text-2xl font-semibold leading-tight text-date-950 sm:text-3xl">From Khairpur to your enquiry.</h3>
+              <p className="max-w-xl text-sm leading-6 text-date-700 sm:text-base sm:leading-7 md:border-l md:border-sand-300 md:pl-5">A straightforward conversation helps both sides confirm the variety, quantity, and terms before an order proceeds.</p>
             </div>
-            <p className="max-w-2xl leading-7 text-date-700 md:justify-self-end">A straightforward conversation helps both sides confirm the variety, quantity, and terms before an order proceeds.</p>
           </div>
 
-          <div className="relative mt-10 grid gap-5 sm:grid-cols-2 md:grid-cols-5 md:gap-3">
-            <div aria-hidden="true" className="absolute bottom-0 left-6 top-6 border-l border-date-200 md:bottom-auto md:left-[9%] md:right-[9%] md:top-6 md:border-l-0 md:border-t" />
+          <div className="relative mt-9 grid grid-cols-1 gap-y-4 sm:mt-10 lg:mt-12 lg:grid-cols-5 lg:gap-x-5 lg:gap-y-0">
+            <div aria-hidden="true" className="absolute left-[10%] right-[10%] top-[1.375rem] hidden h-px bg-[#c0a26a]/75 lg:block" />
+            {[20, 40, 60, 80].map((position) => (
+              <span
+                key={position}
+                aria-hidden="true"
+                className="absolute top-[1.375rem] z-10 hidden -translate-x-1/2 -translate-y-1/2 bg-[#f7f2e8] px-1 text-[0.7rem] leading-none text-[#a98a4f] lg:block"
+                style={{ left: `${position}%` }}
+              >
+                <ArrowRight size={10} strokeWidth={1.6} aria-hidden="true" />
+              </span>
+            ))}
             {processSteps.map(({ Icon, title, text }, index) => (
-              <article key={title} className="relative flex gap-4 bg-white md:flex-col md:items-center md:gap-0 md:px-2 md:text-center">
-                <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-sand-300 bg-sand-100 text-sand-800 md:mb-4">
-                  <Icon size={21} aria-hidden="true" />
+              <article key={title} className="group/process relative grid grid-cols-[3rem_minmax(0,1fr)] items-stretch gap-x-3 lg:flex lg:flex-col lg:items-center lg:gap-0 lg:text-center">
+                {index < processSteps.length - 1 && (
+                  <span aria-hidden="true" className="absolute -bottom-[3.625rem] left-[1.375rem] top-16 w-px bg-[#c0a26a]/70 lg:hidden" />
+                )}
+                <span aria-hidden="true" className="relative z-20 mt-5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#b99a60] bg-[#f7f2e8] font-sans text-[0.7rem] font-semibold tracking-[0.12em] text-date-800 shadow-[0_0_0_5px_#f7f2e8] transition-[background-color,color,transform] duration-300 group-hover/process:scale-105 group-hover/process:bg-[#b99a60] group-hover/process:text-white motion-reduce:transition-none lg:mt-0">
+                  0{index + 1}
                 </span>
-                <div className="pb-1 md:pb-0">
-                  <p className="text-[0.65rem] font-bold tracking-[0.16em] text-sand-700">0{index + 1}</p>
-                  <h3 className="mt-1 font-display text-lg font-semibold text-date-950">{title}</h3>
-                  <p className="mt-1 max-w-[13rem] text-xs leading-5 text-date-600 md:mx-auto">{text}</p>
+                <div className="group/card relative z-10 flex min-h-[8.75rem] flex-col rounded-lg border border-[#e5dccb] bg-[#fffdf9] p-4 shadow-[0_8px_24px_rgba(55,37,20,0.045)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:border-[#cdb783] hover:shadow-[0_14px_30px_rgba(55,37,20,0.09)] motion-reduce:transform-none motion-reduce:transition-none sm:p-5 lg:mt-5 lg:min-h-[14rem] lg:w-full lg:flex-1 lg:items-center lg:p-4 xl:p-5">
+                  <div className="flex items-center gap-3 lg:flex-col lg:gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e9dfcd] bg-[#f5efe3] text-date-700 transition-[transform,color,background-color] duration-300 group-hover/card:scale-110 group-hover/card:bg-[#eee2cd] group-hover/card:text-sand-800 motion-reduce:transition-none lg:h-11 lg:w-11">
+                      <Icon size={20} strokeWidth={1.65} aria-hidden="true" />
+                    </span>
+                    <h3 className="font-display text-lg font-semibold leading-snug text-date-950 sm:text-xl lg:min-h-[3.5rem]">{title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-date-600 lg:mt-2 lg:max-w-[12rem] lg:text-[0.82rem] lg:leading-[1.35rem]">{text}</p>
                 </div>
               </article>
             ))}
@@ -213,27 +232,29 @@ export function HomePage() {
       </section>
 
       <section id="wholesale" className="scroll-mt-24 bg-date-100">
-        <div className="grid lg:min-h-[35rem] lg:grid-cols-2">
-          <div className="relative isolate flex min-h-[23rem] items-end overflow-hidden bg-date-900 px-5 py-9 text-white sm:px-8 sm:py-12 lg:px-12 lg:py-14">
-            <MediaImage alt="Dates for wholesale enquiries" className="absolute inset-0 z-0 h-full w-full object-cover" fallbackLabel={false} stockPhotoVariant="wholesale" />
-            <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-t from-date-950/95 via-date-950/65 to-date-950/15" />
-            <div className="relative z-20 mx-auto w-full max-w-xl lg:ml-auto lg:mr-0 lg:max-w-[34rem]">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-sand-300">B2B & wholesale</p>
-              <h2 className="mt-3 max-w-lg font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">Looking for dates in bulk?</h2>
-              <p className="mt-4 max-w-lg text-sm leading-6 text-white/85 sm:text-base sm:leading-7">Tell the shop what you need. Include a variety, approximate quantity, and any packaging or delivery requirements.</p>
-              <ul className="mt-6 grid gap-2 text-sm text-white/90 sm:grid-cols-2">
-                {['Date variety', 'Approximate quantity', 'Packaging needs', 'Preferred arrangements'].map((item) => (
-                  <li key={item} className="inline-flex items-center gap-2"><Check size={15} className="shrink-0 text-sand-400" aria-hidden="true" />{item}</li>
+        <div className="grid lg:min-h-[34rem] lg:grid-cols-2">
+          <div className="relative isolate flex min-h-[25rem] items-center overflow-hidden bg-date-900 px-5 py-10 text-white sm:px-8 sm:py-12 lg:px-12 lg:py-14">
+            <MediaImage src={settings?.wholesale_background_url} alt="Date palms in a Khairpur growing region" className="absolute inset-0 z-0 h-full w-full object-cover object-[center_54%] brightness-75 saturate-75" fallbackLabel={false} stockPhotoVariant="grove" />
+            <div aria-hidden="true" className="absolute inset-0 z-10 bg-date-950/25" />
+            <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-r from-date-950/90 via-date-950/70 to-date-950/25" />
+            <div className="relative z-20 mx-auto w-full max-w-xl lg:ml-0 lg:mr-auto lg:max-w-[34rem]">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-sand-300">B2B & wholesale</p>
+              <h2 className="mt-3 max-w-lg font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">Looking for Dates in Bulk?</h2>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-white/90 sm:text-base sm:leading-7">Tell us what you need and we'll get back to you with the best options and current market rates.</p>
+              <ul className="mt-5 flex flex-col gap-2.5 text-sm font-medium text-white/95 sm:mt-6">
+                {['Aseel Dates', 'Other Date Varieties', 'Custom Packaging', 'Commercial Quantities'].map((item) => (
+                  <li key={item} className="inline-flex items-center gap-2.5"><Check size={15} strokeWidth={2.2} className="shrink-0 text-sand-400" aria-hidden="true" />{item}</li>
                 ))}
               </ul>
             </div>
           </div>
 
-          <div className="flex items-center bg-cream px-4 py-10 sm:px-8 sm:py-14 lg:px-12">
-            <div className="mx-auto w-full max-w-xl border border-date-200 bg-white p-5 shadow-sm sm:p-7 lg:mx-0 lg:max-w-[38rem]">
-              <div className="mb-6">
-                <h3 className="font-display text-2xl font-semibold text-date-950">Request a wholesale quote</h3>
-                <p className="mt-2 text-sm leading-6 text-date-600">Leave your details and the shop can follow up about your requirements.</p>
+          <div className="flex items-center bg-[#f2ecdf] px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-8">
+            <div className="mx-auto w-full max-w-xl rounded-lg border border-date-200 bg-[#fffdf8] p-4 shadow-[0_16px_44px_rgba(28,16,12,0.08)] sm:p-5 lg:mx-0 lg:max-w-[40rem] lg:p-6">
+              <div className="mb-4">
+                <p className="text-[0.64rem] font-bold uppercase tracking-[0.18em] text-sand-800">Wholesale enquiry</p>
+                <h3 className="mt-1 font-display text-xl font-semibold text-date-950 sm:text-2xl">Request a wholesale quote</h3>
+                <p className="mt-1 text-sm leading-5 text-date-600">Leave your details and the shop can follow up about your requirements.</p>
               </div>
               <EnquiryForm products={products} services={services} mode="wholesale" />
             </div>

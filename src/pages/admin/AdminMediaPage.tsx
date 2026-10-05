@@ -8,6 +8,17 @@ import { uploadAndRegisterImage, validateImageFile, deleteFile, formatBytes, for
 import { useWebsiteSettings } from '@/hooks/useData';
 import type { MediaItem } from '@/types/database';
 
+const imagePlacements = [
+  { field: 'hero_image_url', label: 'Home page hero' },
+  { field: 'wholesale_background_url', label: 'Wholesale background' },
+  { field: 'dates_background_url', label: 'Products page background' },
+  { field: 'announcements_background_url', label: 'Announcements background' },
+  { field: 'services_background_url', label: 'Services background' },
+  { field: 'about_background_url', label: 'About background' },
+] as const;
+
+type ImagePlacementField = typeof imagePlacements[number]['field'];
+
 export function AdminMediaPage() {
   const { settings, setSettings, loading: settingsLoading } = useWebsiteSettings();
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -18,7 +29,8 @@ export function AdminMediaPage() {
   const [notice, setNotice] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
-  const [settingHeroId, setSettingHeroId] = useState<string | null>(null);
+  const [selectedPlacementByMedia, setSelectedPlacementByMedia] = useState<Record<string, ImagePlacementField | ''>>({});
+  const [applyingMediaId, setApplyingMediaId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchMedia = async () => {
@@ -80,8 +92,15 @@ export function AdminMediaPage() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    if (settings?.hero_image_url === deleteTarget.file_url) {
-      setError('This image is currently used as the homepage hero. Remove or replace it in Website Settings before deleting it.');
+    if (settingsLoading) {
+      setError('Please wait for website settings to finish loading before deleting an image.');
+      return;
+    }
+    const activePlacements = imagePlacements
+      .filter(({ field }) => settings?.[field] === deleteTarget.file_url)
+      .map(({ label }) => label);
+    if (activePlacements.length > 0) {
+      setError(`This image is currently used for ${activePlacements.join(', ')}. Choose a replacement before deleting it.`);
       setDeleteTarget(null);
       return;
     }
@@ -106,27 +125,39 @@ export function AdminMediaPage() {
     }
   };
 
-  const setAsHomepageHero = async (item: MediaItem) => {
+  const applyImagePlacement = async (item: MediaItem) => {
+    const selectedField = selectedPlacementByMedia[item.id];
+    const placement = imagePlacements.find(({ field }) => field === selectedField);
+    if (!placement) return;
+
     setError('');
     setNotice('');
-    setSettingHeroId(item.id);
+    setApplyingMediaId(item.id);
 
     try {
+      const payload = { [placement.field]: item.file_url };
       const result = settings
-        ? await supabase.from('website_settings').update({ hero_image_url: item.file_url }).eq('id', settings.id).select('*').single()
-        : await supabase.from('website_settings').insert({ hero_image_url: item.file_url }).select('*').single();
+        ? await supabase.from('website_settings').update(payload).eq('id', settings.id).select('*').single()
+        : await supabase.from('website_settings').insert(payload).select('*').single();
 
       if (result.error) {
-        setError(result.error.message);
+        if (/schema cache/i.test(result.error.message) && result.error.message.includes('website_settings')) {
+          const migration = placement.field === 'hero_image_url'
+            ? '20261002092000_011_add_homepage_hero_image.sql'
+            : '20261005100000_012_add_section_background_images.sql';
+          setError(`Supabase is missing the column for this image placement. Apply ${migration} to the connected project, then reload this page. The migration refreshes the API schema cache.`);
+        } else {
+          setError(result.error.message);
+        }
         return;
       }
 
       setSettings(result.data);
-      setNotice(`${item.filename} is now selected for the homepage hero.`);
+      setNotice(`${item.filename} is now assigned to the ${placement.label.toLowerCase()}.`);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Could not set the homepage hero image.');
+      setError(saveError instanceof Error ? saveError.message : 'Could not apply this image placement.');
     } finally {
-      setSettingHeroId(null);
+      setApplyingMediaId(null);
     }
   };
 
@@ -200,13 +231,31 @@ export function AdminMediaPage() {
                 <p className="text-xs font-medium text-date-700 truncate">{m.filename}</p>
                 <p className="text-xs text-date-400">{formatBytes(m.file_size)}</p>
                 <p className="text-xs text-date-300 mt-0.5">{formatDate(m.created_at)}</p>
+                {imagePlacements.some(({ field }) => settings?.[field] === m.file_url) && (
+                  <p className="mt-2 text-[0.68rem] leading-4 text-palm-700">
+                    Used for: {imagePlacements.filter(({ field }) => settings?.[field] === m.file_url).map(({ label }) => label).join(', ')}
+                  </p>
+                )}
+                <select
+                  aria-label={`Choose where to use ${m.filename}`}
+                  value={selectedPlacementByMedia[m.id] || ''}
+                  onChange={(event) => setSelectedPlacementByMedia((current) => ({
+                    ...current,
+                    [m.id]: event.target.value as ImagePlacementField | '',
+                  }))}
+                  disabled={settingsLoading || applyingMediaId !== null}
+                  className="input-field mt-2 !min-h-9 !px-2 !py-1 text-xs"
+                >
+                  <option value="">Choose where to use this image</option>
+                  {imagePlacements.map(({ field, label }) => <option key={field} value={field}>{label}</option>)}
+                </select>
                 <button
                   type="button"
-                  onClick={() => setAsHomepageHero(m)}
-                  disabled={settingsLoading || settingHeroId !== null}
-                  className={`mt-2 w-full rounded-lg px-2 py-2 text-xs font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${settings?.hero_image_url === m.file_url ? 'bg-palm-100 text-palm-800' : 'bg-white text-date-700 hover:bg-date-50'}`}
+                  onClick={() => applyImagePlacement(m)}
+                  disabled={settingsLoading || applyingMediaId !== null || !selectedPlacementByMedia[m.id] || imagePlacements.some(({ field }) => field === selectedPlacementByMedia[m.id] && settings?.[field] === m.file_url)}
+                  className="mt-2 w-full rounded-md bg-date-800 px-2 py-2 text-xs font-semibold text-cream transition-colors hover:bg-date-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {settingHeroId === m.id ? 'Applying...' : settings?.hero_image_url === m.file_url ? 'Current homepage hero' : 'Use as homepage hero'}
+                  {applyingMediaId === m.id ? 'Applying...' : 'Apply to section'}
                 </button>
               </div>
             </div>

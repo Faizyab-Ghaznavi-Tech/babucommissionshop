@@ -21,7 +21,7 @@ export function AboutPage() {
       description={about?.business_description || settings?.meta_description || 'Learn about Babu Commission Shop and browse date varieties listed from Khairpur.'}
       image={about?.image_1_url || undefined}
     >
-      <PageHeader eyebrow="About" title={`About ${settings?.business_name || 'Babu Commission Shop'}`} subtitle="A place to explore date varieties and discuss your requirements." />
+      <PageHeader eyebrow="About" title={`About ${settings?.business_name || 'Babu Commission Shop'}`} subtitle="A place to explore date varieties and discuss your requirements." image={settings?.about_background_url || undefined} />
       {loading ? <LoadingSpinner label="Loading about content..." /> : (
         <>
           {error && <div role="status" className="container-prose mt-6 rounded-md border border-date-200 bg-date-50 p-4 text-sm text-date-700">Some shop details could not be loaded. Showing general information instead.</div>}

@@ -11,7 +11,7 @@ The site shows a setup page when the Supabase values are missing. Only the publi
 
 ## Supabase setup
 
-Apply the SQL files in `supabase/migrations` to the same Supabase project configured in `.env.local`, in timestamp order. In particular, `20261001062000_006_configure_media_bucket.sql` creates or repairs the public `media` bucket and its image limits, and `20261001063000_007_add_enquiry_business_name.sql` adds the wholesale form's optional business field.
+Apply the SQL files in `supabase/migrations` to the same Supabase project configured in `.env.local`, in timestamp order. In particular, `20261001062000_006_configure_media_bucket.sql` creates or repairs the public `media` bucket and its image limits, `20261001063000_007_add_enquiry_business_name.sql` adds the wholesale form's optional business field, and `20261005110000_013_repair_section_background_schema.sql` ensures the section background image columns are installed and refreshes the API schema cache.
 
 Create or invite `admin@babucommissionshop.com` in Supabase Auth before applying `20261001070000_008_restrict_admin_access.sql`. That migration adds the existing account to the private admin allowlist when it runs. If the account is created later, run this in the Supabase SQL Editor after applying the migration:
 

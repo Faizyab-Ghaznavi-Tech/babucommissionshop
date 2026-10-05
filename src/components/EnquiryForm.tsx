@@ -152,19 +152,24 @@ export function EnquiryForm({
   const fieldError = (field: EnquiryField) => errors[field];
   const fieldId = (field: string) => `${id}-${field}`;
   const errorId = (field: EnquiryField) => `${fieldId(field)}-error`;
-  const fieldClass = 'input-field';
+  const fieldLabelClass = isWholesale
+    ? 'mb-1 block text-[0.68rem] font-semibold text-date-700'
+    : 'label-text';
+  const fieldClass = isWholesale
+    ? 'input-field !min-h-9 !rounded-md !px-3 !py-1.5 text-sm'
+    : 'input-field';
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4" aria-busy={status === 'submitting'}>
+    <form onSubmit={handleSubmit} noValidate className={isWholesale ? 'space-y-3' : 'space-y-4'} aria-busy={status === 'submitting'}>
       {status === 'error' && (
         <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           We couldn’t send your enquiry. Please try again, or use the contact details on this page.
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`grid ${isWholesale ? 'gap-3' : 'gap-4'} sm:grid-cols-2`}>
         <div>
-          <label className="label-text" htmlFor={fieldId('name')}>Your name <span aria-hidden="true">*</span></label>
+          <label className={fieldLabelClass} htmlFor={fieldId('name')}>Your name <span aria-hidden="true">*</span></label>
           <input
             id={fieldId('name')}
             name="name"
@@ -180,7 +185,7 @@ export function EnquiryForm({
           {fieldError('name') && <p className="field-error" id={errorId('name')}>{fieldError('name')}</p>}
         </div>
         <div>
-          <label className="label-text" htmlFor={fieldId('business_name')}>Business or company</label>
+          <label className={fieldLabelClass} htmlFor={fieldId('business_name')}>Business or company</label>
           <input
             id={fieldId('business_name')}
             name="organization"
@@ -193,9 +198,9 @@ export function EnquiryForm({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`grid ${isWholesale ? 'gap-3' : 'gap-4'} sm:grid-cols-2`}>
         <div>
-          <label className="label-text" htmlFor={fieldId('phone')}>Phone or WhatsApp <span aria-hidden="true">*</span></label>
+          <label className={fieldLabelClass} htmlFor={fieldId('phone')}>Phone or WhatsApp <span aria-hidden="true">*</span></label>
           <input
             id={fieldId('phone')}
             name="tel"
@@ -212,7 +217,7 @@ export function EnquiryForm({
           {fieldError('phone') && <p className="field-error" id={errorId('phone')}>{fieldError('phone')}</p>}
         </div>
         <div>
-          <label className="label-text" htmlFor={fieldId('email')}>Email</label>
+          <label className={fieldLabelClass} htmlFor={fieldId('email')}>Email</label>
           <input
             id={fieldId('email')}
             name="email"
@@ -230,15 +235,15 @@ export function EnquiryForm({
       </div>
 
       {isWholesale ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <div>
-            <label className="label-text" htmlFor={fieldId('subject')}>What can we help with?</label>
+            <label className={fieldLabelClass} htmlFor={fieldId('subject')}>What can we help with?</label>
             <select id={fieldId('subject')} value={formData.subject} onChange={(event) => setField('subject', event.target.value)} className={fieldClass}>
               {WHOLESALE_SUBJECTS.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
             </select>
           </div>
           <div>
-            <label className="label-text" htmlFor={fieldId('quantity')}>Approximate quantity</label>
+            <label className={fieldLabelClass} htmlFor={fieldId('quantity')}>Approximate quantity</label>
             <input
               id={fieldId('quantity')}
               value={formData.quantity}
@@ -247,11 +252,23 @@ export function EnquiryForm({
               placeholder="Optional"
             />
           </div>
+          <div>
+            <label className={fieldLabelClass} htmlFor={fieldId('product')}>Product interest</label>
+            <select
+              id={fieldId('product')}
+              value={formData.product_id}
+              onChange={(event) => setField('product_id', event.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Select a date variety</option>
+              {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
+            </select>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label-text" htmlFor={fieldId('subject')}>Subject</label>
+            <label className={fieldLabelClass} htmlFor={fieldId('subject')}>Subject</label>
             <select id={fieldId('subject')} value={formData.subject} onChange={(event) => setField('subject', event.target.value)} className={fieldClass}>
               <option value="">Select a subject</option>
               {['General Enquiry', 'Product Enquiry', 'Service Enquiry', 'Commission-Based Buying', 'Bulk Supply', 'Custom Packaging', 'Other'].map((subject) => (
@@ -260,15 +277,15 @@ export function EnquiryForm({
             </select>
           </div>
           <div>
-            <label className="label-text" htmlFor={fieldId('quantity')}>Quantity</label>
+            <label className={fieldLabelClass} htmlFor={fieldId('quantity')}>Quantity</label>
             <input id={fieldId('quantity')} value={formData.quantity} onChange={(event) => setField('quantity', event.target.value)} className={fieldClass} placeholder="Optional" />
           </div>
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      {!isWholesale && <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="label-text" htmlFor={fieldId('product')}>Product interest</label>
+          <label className={fieldLabelClass} htmlFor={fieldId('product')}>Product interest</label>
           <select
             id={fieldId('product')}
             value={formData.product_id}
@@ -279,32 +296,30 @@ export function EnquiryForm({
             {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
           </select>
         </div>
-        {!isWholesale && (
-          <div>
-            <label className="label-text" htmlFor={fieldId('service')}>Service interest</label>
-            <select
-              id={fieldId('service')}
-              value={formData.service_id}
-              onChange={(event) => setField('service_id', event.target.value)}
-              className={fieldClass}
-            >
-              <option value="">Select a service</option>
-              {services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
-            </select>
-          </div>
-        )}
-      </div>
+        <div>
+          <label className={fieldLabelClass} htmlFor={fieldId('service')}>Service interest</label>
+          <select
+            id={fieldId('service')}
+            value={formData.service_id}
+            onChange={(event) => setField('service_id', event.target.value)}
+            className={fieldClass}
+          >
+            <option value="">Select a service</option>
+            {services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+          </select>
+        </div>
+      </div>}
 
       <div>
-        <label className="label-text" htmlFor={fieldId('message')}>How can we help? <span aria-hidden="true">*</span></label>
+        <label className={fieldLabelClass} htmlFor={fieldId('message')}>How can we help? <span aria-hidden="true">*</span></label>
         <textarea
           id={fieldId('message')}
           name="message"
-          rows={4}
+          rows={isWholesale ? 3 : 4}
           required
           value={formData.message}
           onChange={(event) => setField('message', event.target.value)}
-          className={`${fieldClass} min-h-28 resize-y`}
+          className={`${isWholesale ? 'input-field !min-h-20 !rounded-md !px-3 !py-1.5 text-sm' : 'input-field min-h-28'} resize-y`}
           aria-invalid={!!fieldError('message')}
           aria-describedby={fieldError('message') ? errorId('message') : undefined}
           placeholder="Share the varieties, quantities, or packaging you have in mind."
@@ -312,9 +327,9 @@ export function EnquiryForm({
         {fieldError('message') && <p className="field-error" id={errorId('message')}>{fieldError('message')}</p>}
       </div>
 
-      <button type="submit" disabled={status === 'submitting'} className="btn-primary w-full sm:w-auto">
+      <button type="submit" disabled={status === 'submitting'} className={`btn-primary ${isWholesale ? 'w-full' : 'w-full sm:w-auto'}`}>
         {status === 'submitting' ? <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /> : null}
-        {status === 'submitting' ? 'Sending…' : isWholesale ? 'Request a quote' : 'Send enquiry'}
+        {status === 'submitting' ? 'Sending…' : isWholesale ? 'Request Wholesale Quote' : 'Send enquiry'}
         {status !== 'submitting' && <ArrowRight size={17} aria-hidden="true" />}
       </button>
       <p className="text-xs leading-5 text-date-600">Your enquiry is sent to Babu Commission Shop. We use your details only to respond to your request.</p>

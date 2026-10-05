@@ -152,7 +152,7 @@ export function AdminServicesPage() {
                   <th className="text-left px-4 py-3 font-medium">Order</th>
                   <th className="text-left px-4 py-3 font-medium">Service</th>
                   <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Description</th>
-                  <th className="text-center px-4 py-3 font-medium">Enabled</th>
+                  <th className="text-center px-4 py-3 font-medium">Website visibility</th>
                   <th className="text-right px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -177,7 +177,13 @@ export function AdminServicesPage() {
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell text-sm text-date-500 max-w-xs truncate">{s.description}</td>
                       <td className="px-4 py-3 text-center">
-                        <button onClick={() => toggleEnabled(s)} className="p-1.5 rounded-lg hover:bg-date-100 transition-colors">
+                        <button
+                          type="button"
+                          onClick={() => toggleEnabled(s)}
+                          title={s.is_enabled ? 'Hide this service from the website' : 'Show this service on the website'}
+                          aria-label={s.is_enabled ? `Hide ${s.name} from the website` : `Show ${s.name} on the website`}
+                          className="p-1.5 rounded-lg hover:bg-date-100 transition-colors"
+                        >
                           {s.is_enabled ? <Eye size={18} className="text-palm-600" /> : <EyeOff size={18} className="text-date-300" />}
                         </button>
                       </td>
@@ -248,7 +254,7 @@ export function AdminServicesPage() {
             <div className="flex items-end pb-1">
               <label className="flex items-center gap-2 text-sm text-date-700 cursor-pointer">
                 <input type="checkbox" checked={form.is_enabled} onChange={(e) => setForm(prev => ({ ...prev, is_enabled: e.target.checked }))} className="w-4 h-4 rounded text-date-600 focus:ring-date-400" />
-                Enabled
+                Visible on website
               </label>
             </div>
           </div>
